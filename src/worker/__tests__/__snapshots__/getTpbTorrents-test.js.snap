@@ -1,0 +1,15 @@
+exports[`getTpbTorrents fetches a list of torrents for a given query 1`] = `
+Object {
+  "torrents": Array [
+    Object {
+      "magnetLink": "string",
+      "name": "string",
+      "peers": "number",
+      "quality": "string",
+      "seeds": "number",
+      "size": "number",
+      "source": "string",
+    },
+  ],
+}
+`;

@@ -1,0 +1,20 @@
+{
+  "apps": [
+    {
+      "name": "filmstrip-server",
+      "script": "build/server/index.js",
+      "node_args": "-r dotenv/config",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    {
+      "name": "filmstrip-worker",
+      "script": "build/worker/index.js",
+      "node_args": "-r dotenv/config",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  ]
+}
