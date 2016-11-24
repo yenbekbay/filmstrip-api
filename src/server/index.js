@@ -34,7 +34,7 @@ graphQLServer.use(bodyParser.json());
 graphQLServer.use('/graphql',
   cors({
     origin: isProduction
-      ? 'https://filmstrip.yenbekbay.me'
+      ? 'https://filmstrip.cf'
       : `http://localhost:${CORS_PORT}`,
     methods: ['POST'],
   }),
