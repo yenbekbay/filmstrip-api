@@ -33,7 +33,6 @@ type Query {
 
 schema {
   query: Query
-  # subscription: Subscription
 }
 `];
 
@@ -58,7 +57,6 @@ const rootResolvers = {
       return nodesToConnection({ count, nodes, offset, limit: protectedLimit });
     },
   },
-  // Subscription: {},
 };
 
 // Put schema together into one array of schema strings
