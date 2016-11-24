@@ -13,7 +13,11 @@ WORKDIR ${appDir}
 
 # Add our package.json and install *before* adding our application files
 ADD package.json ./
-RUN npm i --production
+RUN /usr/bin/node \
+  --max_semi_space_size=1 \
+  --max_old_space_size=198 \
+  --max_executable_size=148 \
+  /usr/bin/npm install
 
 # Add application files
 ADD . ./
