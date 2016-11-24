@@ -32,6 +32,7 @@ export type MovieInfo = {
   kpRatingVoteCount?: number,
   rtCriticsRating?: number,
   rtCriticsRatingVoteCount?: number,
+  imdbPopularity: ?number,
   credits: {
     cast: Array<MovieCastMember>,
     crew: {

@@ -90,16 +90,18 @@ class MovieApi {
   };
 
   getMovieInfo = async (query: Query): Promise<MovieInfo> => {
-    const [tmdbInfo, kpInfo, imdbRating] = await Promise.all([
+    const [tmdbInfo, kpInfo, imdbRating, imdbPopularity] = await Promise.all([
       this._getTmdbInfo(query),
       this._getKinopoiskInfo(query),
       this._imdb.getRating(query.imdbId),
+      this._imdb.getPopularity(query.imdbId),
     ]);
 
     return {
       ..._.omit(['videos'], tmdbInfo),
       ...imdbRating,
       ...kpInfo,
+      imdbPopularity,
       productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
       youtubeIds: _.flow(
         _.filter(

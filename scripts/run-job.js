@@ -33,7 +33,7 @@ const jobs = {
     process.exit(0);
   } catch (err) {
     console.error(err.message);
-    console.debug(err.stack);
+    console.log(err.stack);
 
     process.exit(1);
   }
