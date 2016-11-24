@@ -5,7 +5,7 @@ import DataLoader from 'dataloader';
 
 import CacheMap from '../lib/CacheMap';
 import connector from './connector';
-import type { Movie } from '../types';
+import type { Movie, FeedType } from '../types';
 
 const getMoviesByYtsId = async (ytsIds: Array<number>) => {
   const collection = await connector.getCollection('movies');
@@ -37,14 +37,21 @@ const Movies = {
 
     return collection.find().sort({ uploadedAt: -1 }).toArray();
   },
-  getPaged: async (offset: number, limit: number) => {
+  getFeed: async (type: FeedType, offset: number, limit: number) => {
     const collection = await connector.getCollection('movies');
 
+    const query = type === 'LATEST'
+      ? {}
+      : { 'info.imdbPopularity': { $lt: 1000 } };
+    const sort = type === 'LATEST'
+      ? { uploadedAt: -1 }
+      : { 'info.imdbPopularity': 1 };
+
     const [count, nodes] = await Promise.all([
-      collection.count(),
+      collection.count(query),
       collection
-        .find()
-        .sort({ uploadedAt: -1 })
+        .find(query)
+        .sort(sort)
         .skip(offset)
         .limit(limit)
         .toArray(),

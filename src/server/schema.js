@@ -9,6 +9,7 @@ import {
 } from '../mongo/schema';
 import { connectionForType, nodesToConnection } from './connection';
 import { Movies } from '../mongo';
+import type { FeedType } from '../types';
 
 const rootSchema = [`
 type PageInfo {
@@ -18,9 +19,14 @@ type PageInfo {
 
 ${connectionForType('Movie')}
 
+enum FeedType {
+  LATEST
+  TRENDING
+}
+
 type Query {
   movie(slug: String!): Movie
-  movies(offset: Int, limit: Int): MovieConnection!
+  feed(type: FeedType!, offset: Int, limit: Int): MovieConnection!
 }
 
 # type Subscription {}
@@ -36,12 +42,18 @@ const rootResolvers = {
     movie: async (
       root: mixed, { slug }: { slug: string },
     ) => Movies.getBySlug(slug),
-    movies: async (
+    feed: async (
       root: mixed,
-      { offset = 0, limit = 10 }: { offset?: number, limit: number },
+      { type, offset = 0, limit = 10 }: {
+        type: FeedType,
+        offset?: number,
+        limit: number,
+      },
     ) => {
       const protectedLimit = Math.min(20, limit < 1 ? 10 : limit);
-      const { count, nodes } = await Movies.getPaged(offset, protectedLimit);
+      const { count, nodes } = await Movies.getFeed(
+        type, offset, protectedLimit,
+      );
 
       return nodesToConnection({ count, nodes, offset, limit: protectedLimit });
     },

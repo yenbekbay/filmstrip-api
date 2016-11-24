@@ -59,3 +59,4 @@ export type Movie = {
   info: MovieInfo,
   torrents: Array<Torrent>,
 };
+export type FeedType = 'LATEST' | 'TRENDING';

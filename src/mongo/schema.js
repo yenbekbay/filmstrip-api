@@ -43,6 +43,7 @@ type MovieInfo {
   kpRatingVoteCount: Int
   rtCriticsRating: Int
   rtCriticsRatingVoteCount: Int
+  imdbPopularity: Int
   credits: MovieCredits!
   keywords: [String!]!
   youtubeIds: [String!]!
