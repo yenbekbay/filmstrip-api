@@ -32,6 +32,9 @@ const updateMovies = async ({ logger }: AgendaContext) => {
         },
       });
       logger.info(`Updated movie "${movie.info.title}"`);
+
+      // Let's be good guys
+      await new Promise((resolve: () => void) => setTimeout(resolve, 2000));
     } catch (err) {
       logger.error(
         `Failed to update movie "${movie.info.title}":`,

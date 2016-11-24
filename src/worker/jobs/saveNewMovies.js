@@ -45,6 +45,9 @@ const saveNewMovies = async ({ logger }: AgendaContext) => {
             youtubeIds: _.uniq(_.concat(info.youtubeIds, [release.youtubeId])),
           },
         });
+
+        // Let's be good guys
+        await new Promise((resolve: () => void) => setTimeout(resolve, 1500));
       }
     } catch (err) {
       logger.error(`Failed to save movie "${release.title}":`, err.message);
