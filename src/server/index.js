@@ -6,7 +6,6 @@ import { graphqlExpress, graphiqlExpress } from 'graphql-server-express';
 import { printSchema } from 'graphql/utilities/schemaPrinter';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import bodyParser from 'body-parser';
-import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
 import type { $Request, $Response } from 'express';
@@ -18,7 +17,6 @@ import schema from './schema';
 
 const GRAPHQL_PORT = 8080;
 const WS_PORT = 8090;
-const CORS_PORT = 3000;
 
 const graphQLLogger = new Logger('graphql-server');
 const graphQLServer = express();
@@ -31,26 +29,18 @@ graphQLServer.use(morgan(
 graphQLServer.use(bodyParser.urlencoded({ extended: true }));
 graphQLServer.use(bodyParser.json());
 
-graphQLServer.use('/graphql',
-  cors({
-    origin: isProduction
-      ? 'https://filmstrip.cf'
-      : `http://localhost:${CORS_PORT}`,
-    methods: ['POST'],
-  }),
-  graphqlExpress((req: $Request) => {
-    // Get the query, the same way express-graphql does it
-    // https://git.io/vXO1c
-    const query = req.query.query || (req.body: any).query;
-    if (query && query.length > 2000) {
-      // None of our app's queries are this long
-      // Probably indicates someone trying to send an overly expensive query
-      throw new Error('Query too large');
-    }
+graphQLServer.use('/graphql', graphqlExpress((req: $Request) => {
+  // Get the query, the same way express-graphql does it
+  // https://git.io/vXO1c
+  const query = req.query.query || (req.body: any).query;
+  if (query && query.length > 2000) {
+    // None of our app's queries are this long
+    // Probably indicates someone trying to send an overly expensive query
+    throw new Error('Query too large');
+  }
 
-    return { schema };
-  }),
-);
+  return { schema };
+}));
 
 if (!isProduction) {
   graphQLServer.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
