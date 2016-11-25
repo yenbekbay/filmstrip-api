@@ -1,4 +1,4 @@
-FROM keymetrics/pm2-docker-alpine:latest
+FROM mhart/alpine-node:6.9.1
 
 # Install git
 RUN apk add --update git && rm -rf /tmp/* /var/cache/apk/*
@@ -7,17 +7,16 @@ RUN apk add --update git && rm -rf /tmp/* /var/cache/apk/*
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV appDir /opt/app
 
+# Install pm2
+RUN npm install pm2 -g
+
 # Set the work directory
 RUN mkdir -p ${appDir}
 WORKDIR ${appDir}
 
 # Add our package.json and install *before* adding our application files
 ADD package.json ./
-RUN /usr/bin/node \
-  --max_semi_space_size=1 \
-  --max_old_space_size=198 \
-  --max_executable_size=148 \
-  /usr/bin/npm install
+RUN npm i --production
 
 # Add application files
 ADD . ./
