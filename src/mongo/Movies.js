@@ -32,10 +32,19 @@ const MoviesBySlugLoader = new DataLoader(getMoviesBySlug, {
 const Movies = {
   getByYtsId: (ytsId: number) => MoviesByYtsIdLoader.load(ytsId),
   getBySlug: (slug: string) => MoviesBySlugLoader.load(slug),
-  getAll: async () => {
+  getUpdateable: async () => {
     const collection = await connector.getCollection('movies');
 
-    return collection.find().sort({ uploadedAt: -1 }).toArray();
+    const dateMonthAgo = new Date();
+    dateMonthAgo.setMonth(dateMonthAgo.getMonth() - 1);
+    dateMonthAgo.setHours(0, 0, 0);
+
+    return collection
+      .find({
+        createdAt: { $gt: dateMonthAgo },
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
   },
   getFeed: async (type: FeedType, offset: number, limit: number) => {
     const collection = await connector.getCollection('movies');

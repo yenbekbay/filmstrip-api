@@ -13,7 +13,7 @@ const updateMovies = async ({ logger }: AgendaContext) => {
   const tpb = new Tpb();
   const movieApi = new MovieApi();
 
-  const savedMovies = await Movies.getAll();
+  const savedMovies = await Movies.getUpdateable();
   logger.debug(`Got ${savedMovies.length} movies to update`);
 
   // eslint-disable-next-line no-restricted-syntax
