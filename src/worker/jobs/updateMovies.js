@@ -3,13 +3,14 @@
 import _ from 'lodash/fp';
 
 import { Movies } from '../../mongo';
-import getTpbTorrents from '../getTpbTorrents';
 import MovieApi from '../MovieApi';
+import Tpb from '../Tpb';
 import Yts from '../yts';
 import type { AgendaContext } from '../';
 
 const updateMovies = async ({ logger }: AgendaContext) => {
   const yts = new Yts();
+  const tpb = new Tpb();
   const movieApi = new MovieApi();
 
   const savedMovies = await Movies.getAll();
@@ -21,7 +22,7 @@ const updateMovies = async ({ logger }: AgendaContext) => {
       const [release, info, tpbTorrents] = await Promise.all([
         yts.getReleaseDetails(movie.ytsId),
         movieApi.getMovieInfo(movie.info),
-        getTpbTorrents(movie.info.title),
+        tpb.getTorrentsForMovie(movie.info.title),
       ]);
 
       const prevImdbPopularity = movie.info.imdbPopularity;

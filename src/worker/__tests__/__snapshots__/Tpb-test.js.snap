@@ -1,3 +1,9 @@
+exports[`getTpbTorrents fetches a list of top movie titles 1`] = `
+Object {
+  "movieTitles": "Array<string>",
+}
+`;
+
 exports[`getTpbTorrents fetches a list of torrents for a given query 1`] = `
 Object {
   "torrents": Array [

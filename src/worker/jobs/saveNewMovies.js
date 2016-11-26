@@ -4,14 +4,15 @@ import _ from 'lodash/fp';
 import slugify from 'slugify';
 
 import { Movies } from '../../mongo';
-import getTpbTorrents from '../getTpbTorrents';
 import MovieApi from '../MovieApi';
+import Tpb from '../Tpb';
 import Yts from '../yts';
 import type { AgendaContext } from '../';
 import type { Movie } from '../../types';
 
 const saveNewMovies = async ({ logger }: AgendaContext) => {
   const yts = new Yts();
+  const tpb = new Tpb();
   const movieApi = new MovieApi();
 
   const releases = await yts.getLatestReleases();
@@ -30,7 +31,7 @@ const saveNewMovies = async ({ logger }: AgendaContext) => {
       } else {
         const [info, tpbTorrents] = await Promise.all([
           movieApi.getMovieInfo((release: any)),
-          getTpbTorrents(release.title),
+          tpb.getTorrentsForMovie(release.title),
         ]);
 
         movies.push({
