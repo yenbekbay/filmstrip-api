@@ -33,6 +33,38 @@ const MoviesBySlugLoader = new DataLoader(getMoviesBySlug, {
   cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
 });
 
+const getMovieFeed = async (hashes: Array<string>) => Promise.all(
+  hashes.map(async (hash: string) => {
+    const [type, offset, limit] = hash.split(':');
+
+    const collection = await connector.getCollection('movies');
+
+    const query = type === 'LATEST'
+      ? {}
+      : { 'info.imdbPopularity': { $lt: 1000 } };
+    const sort = type === 'LATEST'
+      ? { createdAt: -1 }
+      : { 'info.imdbPopularity': 1 };
+
+    const [count, nodes] = await Promise.all([
+      collection.count(query),
+      collection
+        .find(query)
+        .sort(sort)
+        .skip(parseInt(offset, 10))
+        .limit(parseInt(limit, 10))
+        .toArray(),
+    ]);
+
+    return { count, nodes };
+  }),
+);
+
+const MovieFeedLoader = new DataLoader(getMovieFeed, {
+  cacheMap: new CacheMap(1000 * 60 * 5), // cache for 2 minutes
+  batch: false,
+});
+
 const Movies = {
   getByTmdbId: (tmdbId: number) => MoviesByTmdbIdLoader.load(tmdbId),
   getBySlug: (slug: string) => MoviesBySlugLoader.load(slug),
@@ -50,28 +82,8 @@ const Movies = {
       .sort({ createdAt: -1 })
       .toArray();
   },
-  getFeed: async (type: FeedType, offset: number, limit: number) => {
-    const collection = await connector.getCollection('movies');
-
-    const query = type === 'LATEST'
-      ? {}
-      : { 'info.imdbPopularity': { $lt: 1000 } };
-    const sort = type === 'LATEST'
-      ? { createdAt: -1 }
-      : { 'info.imdbPopularity': 1 };
-
-    const [count, nodes] = await Promise.all([
-      collection.count(query),
-      collection
-        .find(query)
-        .sort(sort)
-        .skip(offset)
-        .limit(limit)
-        .toArray(),
-    ]);
-
-    return { count, nodes };
-  },
+  getFeed: async (type: FeedType, offset: number, limit: number) =>
+    MovieFeedLoader.load(`${type}:${offset}:${limit}`),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 
