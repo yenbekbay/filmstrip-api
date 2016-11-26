@@ -6,6 +6,8 @@ import YtsConnector from './connector';
 import releaseFromRes from './releaseFromRes';
 import type { YtsRelease } from './releaseFromRes';
 
+const MIN_TOTAL_SEEDS = 700;
+
 class Yts {
   _connector: YtsConnector;
 
@@ -21,11 +23,16 @@ class Yts {
         limit: 50,
       },
     );
+    const currentYear = new Date().getFullYear();
 
     return _.flow(
       _.getOr([], 'data.movies'),
       _.map(releaseFromRes),
-      _.filter(({ totalSeeds }: { totalSeeds: number }) => totalSeeds > 1000),
+      _.filter(
+        ({ year, totalSeeds }: YtsRelease) => (
+          year >= currentYear - 1 && totalSeeds > MIN_TOTAL_SEEDS
+        ),
+      ),
       _.orderBy(['uploadedAt', 'totalSeeds'], ['desc', 'desc']),
     )(res);
   };
