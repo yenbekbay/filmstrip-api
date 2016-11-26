@@ -1484,6 +1484,10 @@ dataloader, dataloader@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/dataloader/-/dataloader-1.2.0.tgz#3f73ea657c492c860c1633348adc55ca9bf2107e"
 
+date-fns:
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.11.1.tgz#62b9fc17cb698952426e3ae481d07cbba386f5a5"
+
 date.js@~0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/date.js/-/date.js-0.3.1.tgz#39e7c7c77adc765d10becf496cacd391332d7cc8"

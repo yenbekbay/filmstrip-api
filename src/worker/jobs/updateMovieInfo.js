@@ -1,5 +1,10 @@
 /* @flow */
 
+import {
+  format as formatDate,
+  subMonths as subMonthsFromDate,
+} from 'date-fns';
+
 import { Movies } from '../../mongo';
 import MovieApi from '../MovieApi';
 import type { AgendaContext } from '../';
@@ -7,7 +12,22 @@ import type { AgendaContext } from '../';
 const updateMovieInfo = async ({ logger }: AgendaContext) => {
   const movieApi = new MovieApi();
 
-  const updateableMovies = await Movies.getUpdateable();
+  const threeMonthsAgo = formatDate(
+    subMonthsFromDate(new Date(), 3),
+    'YYYY-MM-DD',
+  );
+
+  const updateableMovies = await Movies.getUpdateable({
+    $or: [
+      {
+        $and: [
+          { 'info.releaseDate': { $gt: threeMonthsAgo } },
+          { 'info.imdbPopularity': { $lt: 1000 } },
+        ],
+      },
+      { 'info.imdbPopularity': { $lt: 600 } },
+    ],
+  });
   logger.debug(`Updating info for ${updateableMovies.length} movies`);
 
   // eslint-disable-next-line no-restricted-syntax

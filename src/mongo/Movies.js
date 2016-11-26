@@ -1,5 +1,9 @@
 /* @flow */
 
+import {
+  subDays as subDaysFromDate,
+  subMonths as subMonthsFromDate,
+} from 'date-fns';
 import _ from 'lodash/fp';
 import DataLoader from 'dataloader';
 
@@ -68,20 +72,18 @@ const MovieFeedLoader = new DataLoader(getMovieFeed, {
 const Movies = {
   getByTmdbId: (tmdbId: number) => MoviesByTmdbIdLoader.load(tmdbId),
   getBySlug: (slug: string) => MoviesBySlugLoader.load(slug),
-  getUpdateable: async () => {
+  getUpdateable: async (query: void | Object) => {
     const collection = await connector.getCollection('movies');
 
-    const dateMonthAgo = new Date();
-    dateMonthAgo.setMonth(dateMonthAgo.getMonth() - 1);
-    dateMonthAgo.setHours(0, 0, 0);
-
-    const dayAgo = new Date();
-    dayAgo.setDate(dayAgo.getDate() - 1);
+    const date = new Date();
+    const dateMonthAgo = subMonthsFromDate(date, 1);
+    const dayAgo = subDaysFromDate(date, 0);
 
     return collection
       .find({
         createdAt: { $gt: dateMonthAgo },
         updatedAt: { $lt: dayAgo },
+        ...query,
       })
       .sort({ createdAt: -1 })
       .toArray();
