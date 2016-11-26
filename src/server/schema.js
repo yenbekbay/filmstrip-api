@@ -20,6 +20,7 @@ type PageInfo {
 ${connectionForType('Movie')}
 
 enum FeedType {
+  NEW
   LATEST
   TRENDING
 }

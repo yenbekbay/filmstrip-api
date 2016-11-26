@@ -37,24 +37,28 @@ const MoviesBySlugLoader = new DataLoader(getMoviesBySlug, {
   cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
 });
 
+const feedQueryMappings = {
+  TRENDING: { 'info.imdbPopularity': { $lt: 600 } },
+  NEW: {},
+  LATEST: {},
+};
+const feedSortMappings = {
+  TRENDING: { 'info.imdbPopularity': 1 },
+  NEW: { 'info.releaseDate': -1 },
+  LATEST: { createdAt: -1 },
+};
+
 const getMovieFeed = async (hashes: Array<string>) => Promise.all(
   hashes.map(async (hash: string) => {
     const [type, offset, limit] = hash.split(':');
 
     const collection = await connector.getCollection('movies');
 
-    const query = type === 'LATEST'
-      ? {}
-      : { 'info.imdbPopularity': { $lt: 600 } };
-    const sort = type === 'LATEST'
-      ? { createdAt: -1 }
-      : { 'info.imdbPopularity': 1 };
-
     const [count, nodes] = await Promise.all([
-      collection.count(query),
+      collection.count(feedQueryMappings[type]),
       collection
-        .find(query)
-        .sort(sort)
+        .find(feedQueryMappings[type])
+        .sort(feedSortMappings[type])
         .skip(parseInt(offset, 10))
         .limit(parseInt(limit, 10))
         .toArray(),
