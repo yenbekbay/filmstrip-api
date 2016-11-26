@@ -41,7 +41,7 @@ const getMovieFeed = async (hashes: Array<string>) => Promise.all(
 
     const query = type === 'LATEST'
       ? {}
-      : { 'info.imdbPopularity': { $lt: 1000 } };
+      : { 'info.imdbPopularity': { $lt: 600 } };
     const sort = type === 'LATEST'
       ? { createdAt: -1 }
       : { 'info.imdbPopularity': 1 };

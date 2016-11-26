@@ -104,7 +104,9 @@ class MovieApi {
       ..._.omit(['videos'], tmdbInfo),
       ...imdbRating,
       ...kpInfo,
-      imdbPopularity,
+      imdbPopularity: (imdbPopularity && imdbPopularity) < 1000
+        ? imdbPopularity
+        : null,
       productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
       youtubeIds: _.flow(
         _.filter(
@@ -125,7 +127,9 @@ class MovieApi {
     return {
       ...imdbRating,
       ...kpInfo,
-      imdbPopularity,
+      imdbPopularity: (imdbPopularity && imdbPopularity) < 1000
+        ? imdbPopularity
+        : null,
     };
   };
 
