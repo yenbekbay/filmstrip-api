@@ -4,7 +4,7 @@ import _ from 'lodash/fp';
 
 import YtsConnector from './connector';
 import releaseFromRes from './releaseFromRes';
-import type { YtsRelease } from './releaseFromRes';
+import type { YtsRelease } from '../../types';
 
 const MIN_TOTAL_SEEDS = 700;
 

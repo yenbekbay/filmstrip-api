@@ -17,8 +17,8 @@ describe('getTpbTorrents', () => {
     expect(modelFromObject({ torrents })).toMatchSnapshot();
   });
 
-  it('fetches a list of top movie titles', async () => {
-    const movieTitles = await tpb.getTopMovieTitles();
-    expect(modelFromObject({ movieTitles })).toMatchSnapshot();
+  it('fetches a list of top movies', async () => {
+    const movies = await tpb.getTopMovies();
+    expect(modelFromObject({ movies })).toMatchSnapshot();
   });
 });

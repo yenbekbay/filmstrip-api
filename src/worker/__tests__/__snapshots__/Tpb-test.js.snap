@@ -1,6 +1,11 @@
-exports[`getTpbTorrents fetches a list of top movie titles 1`] = `
+exports[`getTpbTorrents fetches a list of top movies 1`] = `
 Object {
-  "movieTitles": "Array<string>",
+  "movies": Array [
+    Object {
+      "title": "string",
+      "year": "number",
+    },
+  ],
 }
 `;
 
