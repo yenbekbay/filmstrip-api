@@ -69,7 +69,30 @@ const getMovieFeed = async (hashes: Array<string>) => Promise.all(
 );
 
 const MovieFeedLoader = new DataLoader(getMovieFeed, {
-  cacheMap: new CacheMap(1000 * 60 * 5), // cache for 2 minutes
+  cacheMap: new CacheMap(1000 * 60 * 2), // cache for 2 minutes
+  batch: false,
+});
+
+const matchOperatorsRegex = /[|\\{}()[\]^$+*?.]/g;
+const searchMoviesByQuery = async (queries: Array<string>) => Promise.all(
+  queries.map(async (query: string) => {
+    const collection = await connector.getCollection('movies');
+
+    const docs = await collection
+      .find({
+        'info.title': {
+          $regex: `.*${query.replace(matchOperatorsRegex, '\\$&')}.*`,
+          $options: 'i',
+        },
+      })
+      .toArray();
+
+    return docs;
+  }),
+);
+
+const MoviesSearchLoader = new DataLoader(searchMoviesByQuery, {
+  cacheMap: new CacheMap(1000 * 60 * 30), // cache for 30 minutes
   batch: false,
 });
 
@@ -115,6 +138,11 @@ const Movies = {
     return movies.length > 1
       ? collection.insertMany(movies)
       : collection.insertOne(movies[0]);
+  },
+  search: async (query: string) => {
+    if (query.length < 3) return [];
+
+    return MoviesSearchLoader.load(query);
   },
 };
 

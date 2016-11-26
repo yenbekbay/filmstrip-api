@@ -28,6 +28,7 @@ enum FeedType {
 type Query {
   movie(slug: String!): Movie
   feed(type: FeedType!, offset: Int, limit: Int): MovieConnection!
+  search(query: String!): [Movie!]!
 }
 
 # type Subscription {}
@@ -57,6 +58,9 @@ const rootResolvers = {
 
       return nodesToConnection({ count, nodes, offset, limit: protectedLimit });
     },
+    search: async (
+      root: mixed, { query }: { query: string },
+    ) => Movies.search(query),
   },
 };
 
