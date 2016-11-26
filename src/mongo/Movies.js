@@ -75,9 +75,13 @@ const Movies = {
     dateMonthAgo.setMonth(dateMonthAgo.getMonth() - 1);
     dateMonthAgo.setHours(0, 0, 0);
 
+    const dayAgo = new Date();
+    dayAgo.setDate(dayAgo.getDate() - 1);
+
     return collection
       .find({
         createdAt: { $gt: dateMonthAgo },
+        updatedAt: { $lt: dayAgo },
       })
       .sort({ createdAt: -1 })
       .toArray();

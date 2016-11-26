@@ -1,6 +1,7 @@
 /* @flow */
 
 import saveNewMovies from './saveNewMovies';
-import updateMovies from './updateMovies';
+import updateMovieInfo from './updateMovieInfo';
+import updateTorrents from './updateTorrents';
 
-export { saveNewMovies, updateMovies };
+export { saveNewMovies, updateMovieInfo, updateTorrents };

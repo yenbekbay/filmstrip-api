@@ -3,7 +3,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import inquirer from 'inquirer';
 
-import { saveNewMovies, updateMovies } from '../src/worker/jobs';
+import {
+  saveNewMovies,
+  updateMovieInfo,
+  updateTorrents,
+} from '../src/worker/jobs';
 import Logger from '../src/Logger';
 import type { AgendaContext } from '../src/worker';
 
@@ -15,7 +19,8 @@ const context: AgendaContext = {
 
 const jobs = {
   [saveNewMovies.name]: saveNewMovies,
-  [updateMovies.name]: updateMovies,
+  [updateMovieInfo.name]: updateMovieInfo,
+  [updateTorrents.name]: updateTorrents,
 };
 
 (async () => {

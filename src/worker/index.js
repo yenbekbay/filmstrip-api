@@ -7,7 +7,7 @@ import Agenda from 'agenda';
 import rp from 'request-promise-native';
 
 import { isProduction } from '../env';
-import { saveNewMovies, updateMovies } from './jobs';
+import { saveNewMovies, updateMovieInfo, updateTorrents } from './jobs';
 import connector from '../mongo/connector';
 import Logger from '../Logger';
 
@@ -30,7 +30,11 @@ const context: AgendaContext = {
   logger: new Logger('worker'),
 };
 const { logger } = context;
-const jobDefinitions: Array<JobDefinition> = [saveNewMovies, updateMovies];
+const jobDefinitions: Array<JobDefinition> = [
+  saveNewMovies,
+  updateMovieInfo,
+  updateTorrents,
+];
 
 (async () => {
   const db = await connector.getDb();
@@ -103,7 +107,6 @@ const jobDefinitions: Array<JobDefinition> = [saveNewMovies, updateMovies];
     } else {
       await db.collection('jobs').deleteMany({});
       await runJob(saveNewMovies.name);
-      await runJob(updateMovies.name);
     }
   });
   /* eslint-enable promise/prefer-await-to-callbacks */

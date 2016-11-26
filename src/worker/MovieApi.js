@@ -96,8 +96,8 @@ class MovieApi {
 
     const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
       this._getKinopoiskInfo(query),
-      this._imdb.getRating(tmdbInfo.imdbId),
-      this._imdb.getPopularity(tmdbInfo.imdbId),
+      this._imdb.getRating(query.imdbId || tmdbInfo.imdbId),
+      this._imdb.getPopularity(query.imdbId || tmdbInfo.imdbId),
     ]);
 
     return {
@@ -112,6 +112,20 @@ class MovieApi {
         ),
         _.map('key'),
       )(tmdbInfo.videos),
+    };
+  };
+
+  getUpdates = async (query: Query & { imdbId: string }): Promise<?Object> => {
+    const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
+      this._getKinopoiskInfo(query),
+      this._imdb.getRating(query.imdbId),
+      this._imdb.getPopularity(query.imdbId),
+    ]);
+
+    return {
+      ...imdbRating,
+      ...kpInfo,
+      imdbPopularity,
     };
   };
 
