@@ -24,10 +24,15 @@ const updateMovies = async ({ logger }: AgendaContext) => {
         getTpbTorrents(movie.info.title),
       ]);
 
+      const prevImdbPopularity = movie.info.imdbPopularity;
+
       await Movies.updateOne(movie._id, {
         torrents: [...release.torrents, ...tpbTorrents],
         info: {
           ...info,
+          imdbPopularity: prevImdbPopularity && prevImdbPopularity < 1000
+            ? info.imdbPopularity || prevImdbPopularity
+            : info.imdbPopularity,
           youtubeIds: _.uniq(_.concat(info.youtubeIds, [release.youtubeId])),
         },
       });
