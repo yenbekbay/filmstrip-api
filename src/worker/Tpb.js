@@ -68,7 +68,7 @@ class Tpb {
     }
   };
 
-  getTopMovieTitles = async () => {
+  getTopMovies = async () => {
     const currentYear = new Date().getFullYear();
 
     try {
@@ -89,10 +89,14 @@ class Tpb {
           _.trim,
         )),
         _.uniq,
+        _.map((title: string) => ({
+          title,
+          year: currentYear,
+        })),
       )(results);
     } catch (err) {
       if (_.includes('ECONNRESET', err.message)) {
-        return this.getTopMovieTitles();
+        return this.getTopMovies();
       }
 
       throw err;

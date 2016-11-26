@@ -10,6 +10,7 @@ export type MovieCrewMember = {
   photoUrl: string,
 };
 export type MovieInfo = {
+  ytsId?: number,
   imdbId: string,
   tmdbId: string,
   kpId?: number,
@@ -49,12 +50,20 @@ export type Torrent = {
   quality: '720p' | '1080p',
   magnetLink: string,
 };
+export type YtsRelease = {
+  ytsId: number,
+  imdbId: string,
+  title: string,
+  year: number,
+  uploadedAt: Date,
+  totalSeeds: number,
+  youtubeId: string,
+  torrents: Array<Torrent>,
+};
 export type Movie = {
   _id?: string,
   createdAt: Date,
   updatedAt: Date,
-  uploadedAt: Date,
-  ytsId: number,
   slug: string,
   info: MovieInfo,
   torrents: Array<Torrent>,

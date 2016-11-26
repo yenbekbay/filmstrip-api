@@ -4,18 +4,7 @@ import querystring from 'querystring';
 
 import _ from 'lodash/fp';
 
-import type { Torrent } from '../../types';
-
-export type YtsRelease = {
-  ytsId: number,
-  imdbId: string,
-  title: string,
-  year: number,
-  uploadedAt: Date,
-  totalSeeds: number,
-  youtubeId: string,
-  torrents: Array<Torrent>,
-};
+import type { Torrent, YtsRelease } from '../../types';
 
 const ytsTrackers = [
   'udp://open.demonii.com:1337/announce',

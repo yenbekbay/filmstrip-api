@@ -1,6 +1,6 @@
 /* @flow */
 
-import type { Torrent, Movie } from '../types';
+import type { Torrent } from '../types';
 
 const schema = [`
 type MovieCastMember {
@@ -67,8 +67,6 @@ type Torrent {
 
 type Movie {
   id: Int!
-  uploadedAt: String!
-  ytsId: Int!
   slug: String!
   info: MovieInfo!
   torrents: [Torrent!]!
@@ -78,9 +76,6 @@ type Movie {
 const resolvers = {
   Torrent: {
     source: ({ source }: Torrent) => source.replace(' ', '_').toUpperCase(),
-  },
-  Movie: {
-    uploadedAt: ({ uploadedAt }: Movie) => uploadedAt.toISOString(),
   },
 };
 

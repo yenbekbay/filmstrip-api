@@ -89,12 +89,15 @@ class MovieApi {
       : {};
   };
 
-  getMovieInfo = async (query: Query): Promise<MovieInfo> => {
-    const [tmdbInfo, kpInfo, imdbRating, imdbPopularity] = await Promise.all([
-      this._getTmdbInfo(query),
+  getMovieInfo = async (query: Query): Promise<?MovieInfo> => {
+    const tmdbInfo = await this._getTmdbInfo(query);
+
+    if (!tmdbInfo) return null;
+
+    const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
       this._getKinopoiskInfo(query),
-      this._imdb.getRating(query.imdbId),
-      this._imdb.getPopularity(query.imdbId),
+      this._imdb.getRating(tmdbInfo.imdbId),
+      this._imdb.getPopularity(tmdbInfo.imdbId),
     ]);
 
     return {
@@ -110,6 +113,24 @@ class MovieApi {
         _.map('key'),
       )(tmdbInfo.videos),
     };
+  };
+
+  findMovie = async (
+    query: { title: string, year: string },
+  ): Promise<{ tmdbId: number, title: string }> => {
+    const res = await this._tmdb._connector.apiGet(
+      'search/movie',
+      { query: query.title, year: query.year },
+    );
+
+    return _.flow(
+      _.getOr([], 'results'),
+      _.head,
+      ({ id, title }: { id: number, title: string } = {}) => ({
+        tmdbId: id,
+        title,
+      }),
+    )(res);
   };
 }
 

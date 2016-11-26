@@ -7,14 +7,18 @@ import CacheMap from '../lib/CacheMap';
 import connector from './connector';
 import type { Movie, FeedType } from '../types';
 
-const getMoviesByYtsId = async (ytsIds: Array<number>) => {
+const getMoviesByTmdbId = async (tmdbIds: Array<number>) => {
   const collection = await connector.getCollection('movies');
-  const docs = await collection.find({ ytsId: { $in: ytsIds } }).toArray();
+  const docs = await collection
+    .find({ 'info.tmdbId': { $in: tmdbIds } })
+    .toArray();
 
-  return ytsIds.map((ytsId: number) => _.find({ ytsId }, docs));
+  return tmdbIds.map(
+    (tmdbId: number) => _.find(_.matchesProperty('info.tmdbId', tmdbId), docs),
+  );
 };
 
-const MoviesByYtsIdLoader = new DataLoader(getMoviesByYtsId, {
+const MoviesByTmdbIdLoader = new DataLoader(getMoviesByTmdbId, {
   cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
 });
 
@@ -30,7 +34,7 @@ const MoviesBySlugLoader = new DataLoader(getMoviesBySlug, {
 });
 
 const Movies = {
-  getByYtsId: (ytsId: number) => MoviesByYtsIdLoader.load(ytsId),
+  getByTmdbId: (tmdbId: number) => MoviesByTmdbIdLoader.load(tmdbId),
   getBySlug: (slug: string) => MoviesBySlugLoader.load(slug),
   getUpdateable: async () => {
     const collection = await connector.getCollection('movies');
@@ -53,7 +57,7 @@ const Movies = {
       ? {}
       : { 'info.imdbPopularity': { $lt: 1000 } };
     const sort = type === 'LATEST'
-      ? { uploadedAt: -1 }
+      ? { createdAt: -1 }
       : { 'info.imdbPopularity': 1 };
 
     const [count, nodes] = await Promise.all([
@@ -75,6 +79,11 @@ const Movies = {
       { _id: id },
       { $set: { ...data, updatedAt: new Date() } },
     );
+  },
+  insertOne: async (movie: Movie) => {
+    const collection = await connector.getCollection('movies');
+
+    return collection.insertOne(movie);
   },
   insertAll: async (movies: Array<Movie>) => {
     if (movies.length === 0) return [];

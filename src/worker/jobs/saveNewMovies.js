@@ -8,57 +8,139 @@ import MovieApi from '../MovieApi';
 import Tpb from '../Tpb';
 import Yts from '../yts';
 import type { AgendaContext } from '../';
-import type { Movie } from '../../types';
+import type { YtsRelease } from '../../types';
 
-const saveNewMovies = async ({ logger }: AgendaContext) => {
+type JobContext = AgendaContext & {
+  yts: Yts,
+  tpb: Tpb,
+  movieApi: MovieApi,
+  savingTitles: Array<string>,
+};
+
+const ensureNewMovie = async (
+  { logger, movieApi, savingTitles }: JobContext,
+  { title, year }: { title: string, year: number },
+): Promise<?{ tmdbId: number, title: string }> => {
+  const slug = `${slugify(title).toLowerCase()}-${year}`;
+
+  try {
+    const savedMovieBySlug = await Movies.getBySlug(slug);
+    if (savedMovieBySlug) {
+      logger.debug(`Skipping "${title}" movie`);
+      return null;
+    }
+
+    const foundMovie = await movieApi.findMovie({ title, year });
+    if (!foundMovie) return null;
+
+    const savedMovieByTmdbId = await Movies.getByTmdbId(foundMovie.tmdbId);
+    if (savedMovieByTmdbId) {
+      logger.debug(`Skipping "${title}" movie`);
+      return null;
+    }
+
+    logger.debug(`Saving "${title}" movie`);
+
+    return foundMovie;
+  } catch (err) {
+    logger.error(`Failed to check movie "${title}":`, err.message);
+    logger.debug(err.stack);
+
+    return null;
+  }
+};
+
+const newMoviesFromYts = async (context: JobContext) => {
+  const { logger, yts } = context;
+
+  const releases = (await yts.getLatestReleases()).reverse();
+  logger.debug(`Got ${releases.length} releases from YTS`);
+
+  return _.compact(await Promise.all(
+    releases.map(async (release: YtsRelease) => {
+      const newMovie = await ensureNewMovie(context, release);
+
+      return !newMovie ? null : {
+        ...newMovie,
+        ytsId: release.ytsId,
+        youtubeId: release.youtubeId,
+        torrents: release.torrents,
+      };
+    }),
+  ));
+};
+
+const newMoviesFromTpb = async (context: JobContext) => {
+  const { logger, tpb } = context;
+
+  const movies = _.uniqBy('title', await tpb.getTopMovies());
+  logger.debug(`Got ${movies.length} movies from The Pirate Bay`);
+
+  return _.compact(await Promise.all(
+    movies.map((
+      movie: { title: string, year: number },
+    ) => ensureNewMovie(context, movie)),
+  ));
+};
+
+const saveNewMovies = async (context: AgendaContext) => {
   const yts = new Yts();
   const tpb = new Tpb();
   const movieApi = new MovieApi();
 
-  const releases = await yts.getLatestReleases();
-  logger.debug(`Got ${releases.length} releases from YTS`);
+  const jobContext = { ...context, yts, tpb, movieApi, savingTitles: [] };
+  const { logger } = context;
 
-  const movies: Array<Movie> = [];
+  const ytsMovies = await newMoviesFromYts(jobContext);
+  const tpbMovies = await newMoviesFromTpb(jobContext);
+
+  // remove duplicates
+  const movies = _.uniqBy('title', [...ytsMovies, ...tpbMovies]);
+  let savedCount = 0;
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const release of releases) {
+  for (const movie of movies) {
     try {
-      logger.debug(`Checking if "${release.title}" movie was already saved`);
-      const savedMovie = await Movies.getByYtsId(release.ytsId);
+      const [info, tpbTorrents] = await Promise.all([
+        movieApi.getMovieInfo((movie: any)),
+        tpb.getTorrentsForMovie(movie.title),
+      ]);
 
-      if (savedMovie) {
-        logger.debug(`Skipping "${release.title}" movie`);
-      } else {
-        const [info, tpbTorrents] = await Promise.all([
-          movieApi.getMovieInfo((release: any)),
-          tpb.getTorrentsForMovie(release.title),
-        ]);
+      if (info && (tpbTorrents.length > 0 || !!movie.torrents)) {
+        const year = info.releaseDate.slice(0, 4);
 
-        movies.push({
+        await Movies.insertOne({
           createdAt: new Date(),
           updatedAt: new Date(),
-          uploadedAt: release.uploadedAt,
-          ytsId: release.ytsId,
-          slug: `${slugify(info.title).toLowerCase()}-${release.ytsId}`,
-          torrents: [...release.torrents, ...tpbTorrents],
+          slug: `${slugify(info.title).toLowerCase()}-${year}`,
+          torrents: [...(movie.torrents || []), ...tpbTorrents],
           info: {
             ...info,
-            youtubeIds: _.uniq(_.concat(info.youtubeIds, [release.youtubeId])),
+            ...(movie.ytsId ? { ytsId: movie.ytsId } : {}),
+            youtubeIds: _.uniq(_.concat(
+              info.youtubeIds,
+              movie.youtubeId ? [movie.youtubeId] : [],
+            )),
           },
         });
 
+        logger.info(`Saved "${info.title}" movie`);
+        savedCount += 1;
+
         // Let's be good guys
-        await new Promise((resolve: () => void) => setTimeout(resolve, 1500));
+        await new Promise((resolve: () => void) => setTimeout(resolve, 4000));
+      } else if (!info) {
+        logger.warn(`Failed to get info for movie "${movie.title}"`);
+      } else {
+        logger.warn(`Failed to get torrents for movie "${movie.title}"`);
       }
     } catch (err) {
-      logger.error(`Failed to save movie "${release.title}":`, err.message);
+      logger.error(`Failed to save movie "${movie.title}":`, err.message);
       logger.debug(err.stack);
     }
   }
 
-  logger.info(`Saved ${movies.length} new movies`);
-
-  await Movies.insertAll(movies);
+  logger.info(`Saved ${savedCount} new movies`);
 };
 
 saveNewMovies.interval = '00 04,12,20 * * *';

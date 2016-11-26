@@ -19,25 +19,35 @@ const updateMovies = async ({ logger }: AgendaContext) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of savedMovies) {
     try {
-      const [release, info, tpbTorrents] = await Promise.all([
-        yts.getReleaseDetails(movie.ytsId),
+      const [info, tpbTorrents, release] = await Promise.all([
         movieApi.getMovieInfo(movie.info),
         tpb.getTorrentsForMovie(movie.info.title),
+        movie.info.ytsId
+          ? yts.getReleaseDetails(movie.info.ytsId)
+          : Promise.resolve({}),
       ]);
 
-      const prevImdbPopularity = movie.info.imdbPopularity;
+      if (info && (info.ytsId ? !_.isEmpty(release) : true)) {
+        const prevImdbPopularity = movie.info.imdbPopularity;
 
-      await Movies.updateOne(movie._id, {
-        torrents: [...release.torrents, ...tpbTorrents],
-        info: {
-          ...info,
-          imdbPopularity: prevImdbPopularity && prevImdbPopularity < 1000
-            ? info.imdbPopularity || prevImdbPopularity
-            : info.imdbPopularity,
-          youtubeIds: _.uniq(_.concat(info.youtubeIds, [release.youtubeId])),
-        },
-      });
-      logger.info(`Updated movie "${movie.info.title}"`);
+        await Movies.updateOne(movie._id, {
+          torrents: [...(release.torrents || []), ...tpbTorrents],
+          info: {
+            ...info,
+            ...(release.ytsId ? { ytsId: release.ytsId } : {}),
+            imdbPopularity: prevImdbPopularity && prevImdbPopularity < 1000
+              ? info.imdbPopularity || prevImdbPopularity
+              : info.imdbPopularity,
+            youtubeIds: _.uniq(_.concat(
+              info.youtubeIds,
+              release.youtubeId ? [release.youtubeId] : [],
+            )),
+          },
+        });
+        logger.info(`Updated movie "${movie.info.title}"`);
+      } else {
+        logger.warn(`Failed to get info for movie "${movie.title}"`);
+      }
 
       // Let's be good guys
       await new Promise((resolve: () => void) => setTimeout(resolve, 4000));
