@@ -50,14 +50,20 @@ const feedSortMappings = {
 
 const getMovieFeed = async (hashes: Array<string>) => Promise.all(
   hashes.map(async (hash: string) => {
-    const [type, offset, limit] = hash.split(':');
+    const [type, rawGenres, offset, limit] = hash.split(':');
+
+    const genres = rawGenres ? rawGenres.split(',') : null;
+    const query = {
+      ...feedQueryMappings[type],
+      ...(genres ? { 'info.genres': { $all: genres } } : {}),
+    };
 
     const collection = await connector.getCollection('movies');
 
     const [count, nodes] = await Promise.all([
-      collection.count(feedQueryMappings[type]),
+      collection.count(query),
       collection
-        .find(feedQueryMappings[type])
+        .find(query)
         .sort(feedSortMappings[type])
         .skip(parseInt(offset, 10))
         .limit(parseInt(limit, 10))
@@ -115,8 +121,12 @@ const Movies = {
       .sort({ createdAt: -1 })
       .toArray();
   },
-  getFeed: async (type: FeedType, offset: number, limit: number) =>
-    MovieFeedLoader.load(`${type}:${offset}:${limit}`),
+  getFeed: async (
+    type: FeedType,
+    genres: Array<string>,
+    offset: number,
+    limit: number,
+  ) => MovieFeedLoader.load(`${type}:${genres.join(',')}:${offset}:${limit}`),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 
@@ -143,6 +153,13 @@ const Movies = {
     if (query.length < 3) return [];
 
     return MoviesSearchLoader.load(query);
+  },
+  genres: async () => {
+    const collection = await connector.getCollection('movies');
+
+    const genres = await collection.distinct('info.genres');
+
+    return (genres || []).sort();
   },
 };
 
