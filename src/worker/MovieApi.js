@@ -144,10 +144,12 @@ class MovieApi {
     return _.flow(
       _.getOr([], 'results'),
       _.head,
-      ({ id, title }: { id: number, title: string } = {}) => ({
-        tmdbId: id,
-        title,
-      }),
+      (movie: ?{ id: number, title: string }) => (
+        !movie ? null : ({
+          tmdbId: movie.id,
+          title: movie.title,
+        })
+      ),
     )(res);
   };
 }
