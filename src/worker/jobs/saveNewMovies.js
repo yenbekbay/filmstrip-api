@@ -30,18 +30,18 @@ const ensureNewMovie = async (
       return null;
     }
 
-    const tmdbId = await movieApi.getTmdbId({ title, year, imdbId });
-    if (!tmdbId) return null;
+    const foundMovie = await movieApi.findMovie({ title, year, imdbId });
+    if (!foundMovie) return null;
 
-    const savedMovieByTmdbId = await Movies.getByTmdbId(tmdbId);
+    const savedMovieByTmdbId = await Movies.getByTmdbId(foundMovie.tmdbId);
     if (savedMovieByTmdbId) {
-      logger.debug(`Skipping "${title}" movie`);
+      logger.debug(`Skipping "${foundMovie.title}" movie`);
       return null;
     }
 
-    logger.debug(`Saving "${title}" movie`);
+    logger.debug(`Saving "${foundMovie.title}" movie`);
 
-    return { tmdbId, title };
+    return foundMovie;
   } catch (err) {
     logger.error(`Failed to check movie "${title}":`, err.message);
     logger.debug(err.stack);

@@ -133,7 +133,45 @@ class MovieApi {
     };
   };
 
-  getTmdbId = this._tmdb.getMovieId;
+  findMovie = async (query: {
+    title: string,
+    year: number,
+    imdbId: ?string,
+  }): Promise<?{ tmdbId: number, title: string }> => {
+    if (query.imdbId) {
+      const res = await this._tmdb._connector.apiGet(
+        `find/${query.imdbId}`,
+        { external_source: 'imdb_id' },
+      );
+
+      return _.flow(
+        _.getOr([], 'movie_results'),
+        _.head,
+        (movie: ?{ id: number, title: string }) => (
+          !movie ? null : ({
+            tmdbId: movie.id,
+            title: movie.title,
+          })
+        ),
+      )(res);
+    }
+
+    const res = await this._tmdb._connector.apiGet(
+      'search/movie',
+      { query: query.title, year: query.year },
+    );
+
+    return _.flow(
+      _.getOr([], 'results'),
+      _.head,
+      (movie: ?{ id: number, title: string }) => (
+        !movie ? null : ({
+          tmdbId: movie.id,
+          title: movie.title,
+        })
+      ),
+    )(res);
+  };
 }
 
 export default MovieApi;
