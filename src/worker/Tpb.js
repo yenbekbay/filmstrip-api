@@ -9,11 +9,7 @@ import type { Torrent } from '../types';
 const bytesInGb = 1024 ** 3;
 const gbToBytes = _.memoize((gb: number) => bytesInGb * gb);
 
-const tpbSearchOptions = {
-  category: 207,
-  orderBy: 'seeds',
-  sortBy: 'desc',
-};
+const HD_MOVIES_CATEGORY = 207;
 const blacklistedUploaders = [
   'jXTENZ8',
 ];
@@ -26,7 +22,11 @@ class Tpb {
     try {
       const results = await PirateBay.search(
         `${sanitizedMovieTitle} 1080p|720p -HC`,
-        tpbSearchOptions,
+        {
+          category: HD_MOVIES_CATEGORY,
+          orderBy: 'seeds',
+          sortBy: 'desc',
+        },
       );
 
       return _.flow(
@@ -75,18 +75,20 @@ class Tpb {
     const currentYear = new Date().getFullYear();
 
     try {
-      const results = await PirateBay.search(
-        `${currentYear} 1080p|720p -HC`,
-        tpbSearchOptions,
-      );
+      const results = await PirateBay.topTorrents(HD_MOVIES_CATEGORY);
 
       return _.flow(
-        _.reject(
-          ({ uploader }: Object) => _.includes(uploader, blacklistedUploaders),
+        _.filter(
+          ({ name, uploader }: Object) =>
+            _.includes(currentYear, name) &&
+            !_.includes('HC', name) &&
+            !_.includes(uploader, blacklistedUploaders),
         ),
         _.map(_.flow(
           _.get('name'),
-          (name: string) => _.nth(1, name.match(/(.*)\(?2016\)?/)),
+          (name: string) => _.nth(
+            1, name.match(new RegExp(`(.*)\\(?${currentYear}\\)?`)),
+          ),
           _.replace(/\($/, ''),
           _.replace(/\./g, ' '),
           _.replace(/\s+/g, ' '),
