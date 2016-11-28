@@ -11,7 +11,7 @@ import CacheMap from '../lib/CacheMap';
 import connector from './connector';
 import type { Movie, FeedType } from '../types';
 
-const getMoviesByTmdbId = async (tmdbIds: Array<number>) => {
+const getMovieByTmdbId = async (tmdbIds: Array<number>) => {
   const collection = await connector.getCollection('movies');
   const docs = await collection
     .find({ 'info.tmdbId': { $in: tmdbIds } })
@@ -22,18 +22,18 @@ const getMoviesByTmdbId = async (tmdbIds: Array<number>) => {
   );
 };
 
-const MoviesByTmdbIdLoader = new DataLoader(getMoviesByTmdbId, {
+const MovieByTmdbIdLoader = new DataLoader(getMovieByTmdbId, {
   cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
 });
 
-const getMoviesBySlug = async (slugs: Array<string>) => {
+const getMovieBySlug = async (slugs: Array<string>) => {
   const collection = await connector.getCollection('movies');
   const docs = await collection.find({ slug: { $in: slugs } }).toArray();
 
   return slugs.map((slug: string) => _.find({ slug }, docs));
 };
 
-const MoviesBySlugLoader = new DataLoader(getMoviesBySlug, {
+const MovieBySlugLoader = new DataLoader(getMovieBySlug, {
   cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
 });
 
@@ -103,8 +103,8 @@ const MoviesSearchLoader = new DataLoader(searchMoviesByQuery, {
 });
 
 const Movies = {
-  getByTmdbId: (tmdbId: number) => MoviesByTmdbIdLoader.load(tmdbId),
-  getBySlug: (slug: string) => MoviesBySlugLoader.load(slug),
+  getByTmdbId: (tmdbId: number) => MovieByTmdbIdLoader.load(tmdbId),
+  getBySlug: (slug: string) => MovieBySlugLoader.load(slug),
   getUpdateable: async (query: void | Object) => {
     const collection = await connector.getCollection('movies');
 
