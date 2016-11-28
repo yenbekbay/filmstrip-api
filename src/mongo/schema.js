@@ -33,12 +33,12 @@ type MovieInfo {
   posterUrl: String
   productionCountries: [String!]!
   releaseDate: String!
-  runtime: Int!
+  runtime: Int
   title: String!
   tmdbRating: Float!
   tmdbRatingVoteCount: Int!
-  imdbRating: Float!
-  imdbRatingVoteCount: Int!
+  imdbRating: Float
+  imdbRatingVoteCount: Int
   kpRating: Float
   kpRatingVoteCount: Int
   rtCriticsRating: Int
