@@ -3375,6 +3375,10 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
+leven@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/leven/-/leven-2.0.0.tgz#74c45744439550da185801912829f61d22071bc1"
+
 levn@^0.3.0, levn@~0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.3.0.tgz#3b09924edf9f083c0490fdd4c0bc4421e04764ee"
@@ -3817,9 +3821,9 @@ morgan:
     on-finished "~2.3.0"
     on-headers "~1.0.1"
 
-movie-api@^0.8.1:
-  version "0.8.1"
-  resolved "https://registry.yarnpkg.com/movie-api/-/movie-api-0.8.1.tgz#47625d492091e7585362d431f41ba6d70c6d216a"
+movie-api@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/movie-api/-/movie-api-0.10.1.tgz#24bc53d0f884c7d8f613dd0f8deff352fd75b82c"
   dependencies:
     babel-runtime "^6.18.0"
     cheerio "^0.22.0"
@@ -3833,6 +3837,7 @@ movie-api@^0.8.1:
     random-useragent "^0.3.1"
     request "^2.78.0"
     request-promise-native "^1.0.3"
+    similarity "^1.1.0"
 
 ms@0.7.1:
   version "0.7.1"
@@ -4741,6 +4746,12 @@ shellwords@^0.1.0:
 signal-exit@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.1.tgz#5a4c884992b63a7acd9badb7894c3ee9cfccad81"
+
+similarity@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/similarity/-/similarity-1.1.0.tgz#aa3de5be51b49ef67b12257eab25c8dcff107237"
+  dependencies:
+    leven "^2.0.0"
 
 slash@^1.0.0:
   version "1.0.0"

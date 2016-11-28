@@ -59,8 +59,8 @@ type Query = {
   title: string,
   year: number,
   imdbId: string,
-  tmdbId?: ?string,
-  kpId?: ?string,
+  tmdbId?: ?number,
+  kpId?: ?number,
 };
 
 class MovieApi {
@@ -104,7 +104,7 @@ class MovieApi {
       ..._.omit(['videos'], tmdbInfo),
       ...imdbRating,
       ...kpInfo,
-      imdbPopularity: (imdbPopularity && imdbPopularity) < 1000
+      imdbPopularity: imdbPopularity && imdbPopularity < 1000
         ? imdbPopularity
         : null,
       productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
@@ -127,31 +127,13 @@ class MovieApi {
     return {
       ...imdbRating,
       ...kpInfo,
-      imdbPopularity: (imdbPopularity && imdbPopularity) < 1000
+      imdbPopularity: imdbPopularity && imdbPopularity < 1000
         ? imdbPopularity
         : null,
     };
   };
 
-  findMovie = async (
-    query: { title: string, year: string },
-  ): Promise<{ tmdbId: number, title: string }> => {
-    const res = await this._tmdb._connector.apiGet(
-      'search/movie',
-      { query: query.title, year: query.year },
-    );
-
-    return _.flow(
-      _.getOr([], 'results'),
-      _.head,
-      (movie: ?{ id: number, title: string }) => (
-        !movie ? null : ({
-          tmdbId: movie.id,
-          title: movie.title,
-        })
-      ),
-    )(res);
-  };
+  getTmdbId = this._tmdb.getMovieId;
 }
 
 export default MovieApi;

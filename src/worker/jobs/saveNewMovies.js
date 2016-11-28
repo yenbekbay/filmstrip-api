@@ -19,7 +19,7 @@ type JobContext = AgendaContext & {
 
 const ensureNewMovie = async (
   { logger, movieApi, savingTitles }: JobContext,
-  { title, year }: { title: string, year: number },
+  { title, year, imdbId }: { title: string, year: number, imdbId: ?string },
 ): Promise<?{ tmdbId: number, title: string }> => {
   const slug = `${slugify(title).toLowerCase()}-${year}`;
 
@@ -30,10 +30,10 @@ const ensureNewMovie = async (
       return null;
     }
 
-    const foundMovie = await movieApi.findMovie({ title, year });
-    if (!foundMovie) return null;
+    const tmdbId = await movieApi.getTmdbId({ title, year, imdbId });
+    if (!tmdbId) return null;
 
-    const savedMovieByTmdbId = await Movies.getByTmdbId(foundMovie.tmdbId);
+    const savedMovieByTmdbId = await Movies.getByTmdbId(tmdbId);
     if (savedMovieByTmdbId) {
       logger.debug(`Skipping "${title}" movie`);
       return null;
@@ -41,7 +41,7 @@ const ensureNewMovie = async (
 
     logger.debug(`Saving "${title}" movie`);
 
-    return foundMovie;
+    return { tmdbId, title };
   } catch (err) {
     logger.error(`Failed to check movie "${title}":`, err.message);
     logger.debug(err.stack);
@@ -58,7 +58,11 @@ const newMoviesFromYts = async (context: JobContext) => {
 
   return _.compact(await Promise.all(
     releases.map(async (release: YtsRelease) => {
-      const newMovie = await ensureNewMovie(context, release);
+      const newMovie = await ensureNewMovie(context, {
+        title: release.title,
+        year: release.year,
+        imdbId: release.imdbId,
+      });
 
       return !newMovie ? null : {
         ...newMovie,
@@ -79,7 +83,11 @@ const newMoviesFromTpb = async (context: JobContext) => {
   return _.compact(await Promise.all(
     movies.map((
       movie: { title: string, year: number },
-    ) => ensureNewMovie(context, movie)),
+    ) => ensureNewMovie(context, {
+      title: movie.title,
+      year: movie.year,
+      imdbId: null,
+    })),
   ));
 };
 

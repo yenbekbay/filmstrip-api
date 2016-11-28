@@ -71,7 +71,7 @@
     "lodash": "^4.17.2",
     "mongodb": "^2.2.11",
     "morgan": "^1.7.0",
-    "movie-api": "^0.8.1",
+    "movie-api": "^0.10.1",
     "promise-throttle": "^0.3.1",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
