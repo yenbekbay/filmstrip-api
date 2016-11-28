@@ -14,6 +14,9 @@ const tpbSearchOptions = {
   orderBy: 'seeds',
   sortBy: 'desc',
 };
+const blacklistedUploaders = [
+  'jXTENZ8',
+];
 
 class Tpb {
   getTorrentsForMovie = async (
@@ -78,6 +81,9 @@ class Tpb {
       );
 
       return _.flow(
+        _.reject(
+          ({ uploader }: Object) => _.includes(uploader, blacklistedUploaders),
+        ),
         _.map(_.flow(
           _.get('name'),
           (name: string) => _.nth(1, name.match(/(.*)\(?2016\)?/)),
