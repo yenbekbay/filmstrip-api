@@ -40,7 +40,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
         `Failed to update torrents for movie "${movie.info.title}":`,
         err.message,
       );
-      logger.debug(err.stack);
+      logger.verbose(err.stack);
     }
   }
 };

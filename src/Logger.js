@@ -46,12 +46,16 @@ class Logger {
     winstonLogger.warn(`[${this._source}]`, ...data);
   };
 
-  debug = (...data: Array<any>) => {
-    winstonLogger.debug(`[${this._source}]`, ...data);
-  };
-
   info = (...data: Array<any>) => {
     winstonLogger.info(`[${this._source}]`, ...data);
+  };
+
+  verbose = (...data: Array<any>) => {
+    winstonLogger.verbose(`[${this._source}]`, ...data);
+  };
+
+  debug = (...data: Array<any>) => {
+    winstonLogger.debug(`[${this._source}]`, ...data);
   };
 
   stream = {

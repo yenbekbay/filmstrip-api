@@ -86,7 +86,7 @@ const jobLoggers = jobDefinitions.reduce((
   });
   agenda.on('fail', (err: Error, { attrs: { name: jobName } }: AgendaJob) => {
     jobLoggers[jobName].error('Job failed:', err.message);
-    jobLoggers[jobName].error(err.stack);
+    jobLoggers[jobName].verbose(err.stack);
   });
   agenda.on('ready', async () => {
     if (!isProduction) {

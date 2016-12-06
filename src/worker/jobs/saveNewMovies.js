@@ -44,7 +44,7 @@ const ensureNewMovie = async (
     return foundMovie;
   } catch (err) {
     logger.error(`Failed to check movie "${title}":`, err.message);
-    logger.debug(err.stack);
+    logger.verbose(err.stack);
 
     return null;
   }
@@ -144,7 +144,7 @@ const saveNewMovies = async (context: AgendaContext) => {
       }
     } catch (err) {
       logger.error(`Failed to save movie "${movie.title}":`, err.message);
-      logger.debug(err.stack);
+      logger.verbose(err.stack);
     }
   }
 

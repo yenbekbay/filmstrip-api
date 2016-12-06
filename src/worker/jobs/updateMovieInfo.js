@@ -63,7 +63,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
         `Failed to update info for movie "${movie.info.title}":`,
         err.message,
       );
-      logger.debug(err.stack);
+      logger.verbose(err.stack);
     }
   }
 };
