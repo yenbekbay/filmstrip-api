@@ -1,0 +1,46 @@
+exports[`MovieApi fetches movie info for a given query 1`] = `
+Object {
+  "backdropUrl": "string",
+  "credits": Object {
+    "cast": Array [
+      Object {
+        "character": "string",
+        "name": "string",
+        "photoUrl": "string",
+      },
+    ],
+    "crew": Object {
+      "directors": Array [
+        Object {
+          "name": "string",
+          "photoUrl": "string",
+        },
+      ],
+    },
+  },
+  "genres": "Array<string>",
+  "imdbId": "string",
+  "imdbPopularity": "number",
+  "imdbRating": "number",
+  "imdbRatingVoteCount": "number",
+  "keywords": "Array<string>",
+  "kpId": "number",
+  "kpRating": "number",
+  "kpRatingVoteCount": "number",
+  "mpaaRating": "string",
+  "originalLanguage": "string",
+  "originalTitle": "string",
+  "posterUrl": "string",
+  "productionCountries": "Array<string>",
+  "releaseDate": "string",
+  "rtCriticsRating": "number",
+  "rtCriticsRatingVoteCount": "number",
+  "runtime": "number",
+  "synopsis": "string",
+  "title": "string",
+  "tmdbId": "number",
+  "tmdbRating": "number",
+  "tmdbRatingVoteCount": "number",
+  "youtubeIds": "Array<string>",
+}
+`;

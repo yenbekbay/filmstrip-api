@@ -1,12 +1,14 @@
 /* @flow */
 
+import { filter } from 'graphql-anywhere';
 import { Tmdb, Imdb, Kinopoisk } from 'movie-api';
 import _ from 'lodash/fp';
+import gql from 'graphql-tag';
 
 import { tmdbApiKey, imdbUserId } from '../env';
 import type { MovieInfo } from '../types';
 
-const TMDB_MOVIE_INFO_QUERY = `
+const TMDB_MOVIE_INFO_QUERY = gql`
   {
     tmdbId
     imdbId
@@ -44,7 +46,7 @@ const TMDB_MOVIE_INFO_QUERY = `
     }
   }
 `;
-const KP_MOVIE_INFO_QUERY = `
+const KP_MOVIE_INFO_QUERY = gql`
   {
     kpId
     kpRating
@@ -77,7 +79,7 @@ class MovieApi {
     const movieId = tmdbId || await this._tmdb.getMovieId({ imdbId });
 
     return movieId
-      ? this._tmdb.getMovieInfo(movieId, TMDB_MOVIE_INFO_QUERY)
+      ? filter(TMDB_MOVIE_INFO_QUERY, await this._tmdb.getMovieInfo(movieId))
       : {};
   };
 
@@ -85,7 +87,7 @@ class MovieApi {
     const movieId = kpId || await this._kp.getFilmId({ title, year });
 
     return movieId
-      ? this._kp.getFilmInfo(movieId, KP_MOVIE_INFO_QUERY)
+      ? filter(KP_MOVIE_INFO_QUERY, await this._kp.getFilmInfo(movieId))
       : {};
   };
 
