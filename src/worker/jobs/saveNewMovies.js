@@ -6,7 +6,7 @@ import slugify from 'slugify';
 import { Movies } from '../../mongo';
 import MovieApi from '../MovieApi';
 import Tpb from '../Tpb';
-import Yts from '../yts';
+import Yts from '../Yts';
 import type { AgendaContext } from '../';
 import type { YtsRelease } from '../../types';
 

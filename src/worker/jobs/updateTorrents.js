@@ -4,7 +4,7 @@ import _ from 'lodash/fp';
 
 import { Movies } from '../../mongo';
 import Tpb from '../Tpb';
-import Yts from '../yts';
+import Yts from '../Yts';
 import type { AgendaContext } from '../';
 
 const updateTorrents = async ({ logger }: AgendaContext) => {
