@@ -1,5 +1,5 @@
-// flow-typed signature: 54f4a1579bf43031e95db3d78777be00
-// flow-typed version: aac2114da6/express_v4.x.x/flow_>=v0.25.x
+// flow-typed signature: 540efbb64c39df0f64e06608870891c2
+// flow-typed version: c72c426249/express_v4.x.x/flow_>=v0.25.x
 
 // @flow
 import type { Server } from 'http';
@@ -49,7 +49,7 @@ declare type express$CookieOptions = {
   encode?: (value: string) => string,
   expires?: Date,
   httpOnly?: boolean,
-  maxAge?: string,
+  maxAge?: number,
   path?: string,
   secure?: boolean,
   signed?: boolean
