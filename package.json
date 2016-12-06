@@ -86,6 +86,7 @@
     "@types/body-parser": "^0.0.33",
     "@types/bytes": "^2.4.33",
     "@types/cors": "^0.0.33",
+    "@types/date-fns": "^2.5.3",
     "@types/dotenv": "^2.0.19",
     "@types/express": "^4.0.34",
     "@types/graphql": "^0.8.2",
