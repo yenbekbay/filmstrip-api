@@ -53,7 +53,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
         });
         logger.info(`Updated info for movie "${movie.info.title}"`);
       } else {
-        logger.warn(`Failed to get updates for movie "${movie.title}"`);
+        logger.warn(`Failed to get updates for movie "${movie.info.title}"`);
       }
 
       // Let's be good guys

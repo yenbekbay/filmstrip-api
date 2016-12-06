@@ -9,7 +9,7 @@ type ${type}Connection {
 
 const nodesToConnection = (
   { nodes, count, offset, limit }: {
-    nodes: Array<Object>,
+    nodes: Array<any>,
     count: number,
     offset: number,
     limit: number,

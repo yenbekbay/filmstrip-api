@@ -119,7 +119,7 @@ class MovieApi {
     };
   };
 
-  getUpdates = async (query: Query & { imdbId: string }): Promise<?Object> => {
+  getUpdates = async (query: Query): Promise<?Object> => {
     const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
       this._getKinopoiskInfo(query),
       this._imdb.getRating(query.imdbId),

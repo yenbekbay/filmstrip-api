@@ -9,7 +9,7 @@ import DataLoader from 'dataloader';
 
 import CacheMap from '../lib/CacheMap';
 import connector from './connector';
-import type { Movie, FeedType } from '../types';
+import type { Movie, MovieDoc, FeedType } from '../types';
 
 const getMovieByTmdbId = async (tmdbIds: Array<number>) => {
   const collection = await connector.getCollection('movies');
@@ -102,10 +102,16 @@ const MoviesSearchLoader = new DataLoader(searchMoviesByQuery, {
   batch: false,
 });
 
+type Feed = {
+  count: number,
+  nodes: Array<MovieDoc>,
+};
+
 const Movies = {
-  getByTmdbId: (tmdbId: number) => MovieByTmdbIdLoader.load(tmdbId),
-  getBySlug: (slug: string) => MovieBySlugLoader.load(slug),
-  getUpdateable: async (query: void | Object) => {
+  getByTmdbId: (tmdbId: number): Promise<?MovieDoc> =>
+    MovieByTmdbIdLoader.load(tmdbId),
+  getBySlug: (slug: string): Promise<?MovieDoc> => MovieBySlugLoader.load(slug),
+  getUpdateable: async (query: void | Object): Promise<Array<MovieDoc>> => {
     const collection = await connector.getCollection('movies');
 
     const date = new Date();
@@ -126,7 +132,8 @@ const Movies = {
     genres: Array<string>,
     offset: number,
     limit: number,
-  ) => MovieFeedLoader.load(`${type}:${genres.join(',')}:${offset}:${limit}`),
+  ): Promise<Feed> =>
+    MovieFeedLoader.load(`${type}:${genres.join(',')}:${offset}:${limit}`),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 
@@ -149,12 +156,12 @@ const Movies = {
       ? collection.insertMany(movies)
       : collection.insertOne(movies[0]);
   },
-  search: async (query: string) => {
+  search: async (query: string): Promise<Array<MovieDoc>> => {
     if (query.length < 3) return [];
 
     return MoviesSearchLoader.load(query);
   },
-  genres: async () => {
+  genres: async (): Promise<Array<string>> => {
     const collection = await connector.getCollection('movies');
 
     const genres = await collection.distinct('info.genres');

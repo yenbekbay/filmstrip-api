@@ -30,7 +30,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
         });
         logger.info(`Updated torrents for movie "${movie.info.title}"`);
       } else {
-        logger.warn(`Failed to get torrents for movie "${movie.title}"`);
+        logger.warn(`Failed to get torrents for movie "${movie.info.title}"`);
       }
 
       // Let's be good guys

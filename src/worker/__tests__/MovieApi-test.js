@@ -4,7 +4,7 @@ import { modelFromObject } from '../../test-utils';
 import MovieApi from '../MovieApi';
 
 describe('MovieApi', () => {
-  let movieApi;
+  let movieApi: MovieApi;
 
   beforeAll(() => {
     movieApi = new MovieApi();
