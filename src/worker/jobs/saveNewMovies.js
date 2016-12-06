@@ -26,7 +26,7 @@ const ensureNewMovie = async (
   try {
     const savedMovieBySlug = await Movies.getBySlug(slug);
     if (savedMovieBySlug) {
-      logger.debug(`Skipping "${title}" movie`);
+      logger.debug(`Skipping movie "${title}"`);
       return null;
     }
 
@@ -35,11 +35,11 @@ const ensureNewMovie = async (
 
     const savedMovieByTmdbId = await Movies.getByTmdbId(foundMovie.tmdbId);
     if (savedMovieByTmdbId) {
-      logger.debug(`Skipping "${foundMovie.title}" movie`);
+      logger.debug(`Skipping movie "${foundMovie.title}"`);
       return null;
     }
 
-    logger.debug(`Saving "${foundMovie.title}" movie`);
+    logger.debug(`Saving movie "${foundMovie.title}"`);
 
     return foundMovie;
   } catch (err) {
@@ -132,7 +132,7 @@ const saveNewMovies = async (context: AgendaContext) => {
           },
         });
 
-        logger.info(`Saved "${info.title}" movie`);
+        logger.info(`Saved movie "${info.title}"`);
         savedCount += 1;
 
         // Let's be good guys
