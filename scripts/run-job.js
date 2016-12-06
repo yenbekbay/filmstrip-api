@@ -3,25 +3,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import inquirer from 'inquirer';
 
-import {
-  saveNewMovies,
-  updateMovieInfo,
-  updateTorrents,
-} from '../src/worker/jobs';
+import * as jobs from '../src/worker/jobs';
 import Logger from '../src/Logger';
-import type { AgendaContext } from '../src/worker';
 
 Error.stackTraceLimit = Infinity;
-
-const context: AgendaContext = {
-  logger: new Logger('worker'),
-};
-
-const jobs = {
-  [saveNewMovies.name]: saveNewMovies,
-  [updateMovieInfo.name]: updateMovieInfo,
-  [updateTorrents.name]: updateTorrents,
-};
 
 (async () => {
   /* eslint-disable unicorn/no-process-exit, no-console */
@@ -33,7 +18,7 @@ const jobs = {
       choices: Object.keys(jobs),
     }]);
 
-    await jobs[jobName](context);
+    await jobs[jobName]({ logger: new Logger(`job-${jobName}`) });
 
     process.exit(0);
   } catch (err) {

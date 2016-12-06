@@ -3,11 +3,12 @@
 import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 
+import _ from 'lodash/fp';
 import Agenda from 'agenda';
 import rp from 'request-promise-native';
 
 import { isProduction } from '../env';
-import { saveNewMovies, updateMovieInfo, updateTorrents } from './jobs';
+import * as jobs from './jobs';
 import connector from '../mongo/connector';
 import Logger from '../Logger';
 
@@ -26,15 +27,14 @@ type AgendaJob = {
   },
 };
 
-const context: AgendaContext = {
-  logger: new Logger('worker'),
-};
-const { logger } = context;
-const jobDefinitions: Array<JobDefinition> = [
-  saveNewMovies,
-  updateMovieInfo,
-  updateTorrents,
-];
+const jobDefinitions: Array<JobDefinition> = _.values(jobs);
+const jobLoggers = jobDefinitions.reduce((
+  loggers: Object,
+  jobDef: JobDefinition,
+) => ({
+  ...loggers,
+  [jobDef.name]: new Logger(`job-${jobDef.name}`),
+}), {});
 
 (async () => {
   const db = await connector.getDb();
@@ -49,23 +49,10 @@ const jobDefinitions: Array<JobDefinition> = [
     }
   });
 
-  const runJob = (jobName: string) => new Promise((
-    resolve: () => void,
-    reject: (err: Error) => void,
-  ) => {
-    agenda.create(jobName).run((err: ?Error) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-
   jobDefinitions.forEach((jobDef: JobDefinition) => {
     agenda.define(jobDef.name, async (job: AgendaJob, done: () => void) => {
       try {
-        await jobDef(context);
+        await jobDef({ logger: jobLoggers[jobDef.name] });
         done();
       } catch (err) {
         done(err);
@@ -89,25 +76,24 @@ const jobDefinitions: Array<JobDefinition> = [
     : {};
 
   agenda.on('start', ({ attrs: { name: jobName } }: AgendaJob) => {
-    logger.info(`Job "${jobName}" started`);
+    jobLoggers[jobName].info('Job started');
   });
   agenda.on('success', ({ attrs: { name: jobName } }: AgendaJob) => {
-    logger.info(`Job "${jobName}" finished successfully`);
+    jobLoggers[jobName].info('Job finished successfully');
     if (healthchecks[jobName]) {
       rp(healthchecks[jobName]);
     }
   });
   agenda.on('fail', (err: Error, { attrs: { name: jobName } }: AgendaJob) => {
-    logger.error(`Job "${jobName}" failed`, err.message);
-    logger.debug(err.stack);
+    jobLoggers[jobName].error('Job failed:', err.message);
+    jobLoggers[jobName].error(err.stack);
   });
   agenda.on('ready', async () => {
-    if (isProduction) {
-      agenda.start();
-    } else {
+    if (!isProduction) {
       await db.collection('jobs').deleteMany({});
-      await runJob(saveNewMovies.name);
     }
+
+    agenda.start();
   });
   /* eslint-enable promise/prefer-await-to-callbacks */
 })();
