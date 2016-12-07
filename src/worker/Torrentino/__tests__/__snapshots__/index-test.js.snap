@@ -1,0 +1,59 @@
+exports[`Torrentino fetches a list of latest releases 1`] = `
+Object {
+  "torrentinoReleases": Array [
+    Object {
+      "kpId": "number",
+      "title": "string",
+      "torrentinoSlug": "string",
+      "year": "number",
+    },
+  ],
+}
+`;
+
+exports[`Torrentino fetches release details for a given torrentino slug 1`] = `
+Object {
+  "info": Object {
+    "credits": Object {
+      "cast": Array [
+        Object {
+          "name": "string",
+          "photoUrl": "null",
+        },
+      ],
+      "crew": Object {
+        "directors": Array [
+          Object {
+            "name": "string",
+            "photoUrl": "null",
+          },
+        ],
+      },
+    },
+    "genres": "Array<string>",
+    "kpId": "number",
+    "originalTitle": "string",
+    "posterUrl": "string",
+    "productionCountries": "Array<string>",
+    "releaseDate": "string",
+    "runtime": "number",
+    "synopsis": "string",
+    "title": "string",
+    "torrentinoSlug": "string",
+    "year": "number",
+  },
+  "torrents": Array [
+    Object {
+      "audioTracks": "Array<string>",
+      "audioTranslationType": "string",
+      "bundledSubtitles": "Array<string>",
+      "magnetLink": "string",
+      "peers": "number",
+      "quality": "string",
+      "seeds": "number",
+      "size": "number",
+      "source": "string",
+    },
+  ],
+}
+`;

@@ -4,10 +4,8 @@ import _ from 'lodash/fp';
 import bytes from 'bytes';
 import PirateBay from 'thepiratebay';
 
+import { torrentQualityTest } from './utils';
 import type { Torrent } from '../types';
-
-const bytesInGb = 1024 ** 3;
-const gbToBytes = _.memoize((gb: number) => bytesInGb * gb);
 
 const HD_MOVIES_CATEGORY = 207;
 const blacklistedUploaders = [
@@ -49,17 +47,7 @@ class Tpb {
           ])(name),
           magnetLink,
         })),
-        _.filter(_.cond([
-          [
-            ({ quality }: Torrent) => _.eq('720p', quality),
-            ({ size }: Torrent) => size > gbToBytes(1) && size < gbToBytes(3),
-          ],
-          [
-            ({ quality }: Torrent) => _.eq('1080p', quality),
-            ({ size }: Torrent) => size > gbToBytes(2) && size < gbToBytes(5),
-          ],
-          [_.stubTrue, _.stubFalse],
-        ])),
+        _.filter(torrentQualityTest),
         _.uniqBy('quality'),
       )(results);
     } catch (err) {
