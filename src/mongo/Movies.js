@@ -22,9 +22,7 @@ const getMovieByTmdbId = async (tmdbIds: Array<number>) => {
   );
 };
 
-const MovieByTmdbIdLoader = new DataLoader(getMovieByTmdbId, {
-  cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
-});
+const MovieByTmdbIdLoader = new DataLoader(getMovieByTmdbId, { cache: false });
 
 const getMovieBySlug = async (slugs: Array<string>) => {
   const collection = await connector.getCollection('movies');
@@ -33,9 +31,7 @@ const getMovieBySlug = async (slugs: Array<string>) => {
   return slugs.map((slug: string) => _.find({ slug }, docs));
 };
 
-const MovieBySlugLoader = new DataLoader(getMovieBySlug, {
-  cacheMap: new CacheMap(1000 * 60 * 5), // cache for 5 minutes
-});
+const MovieBySlugLoader = new DataLoader(getMovieBySlug, { cache: false });
 
 const feedQueryMappings = {
   TRENDING: { 'info.imdbPopularity': { $lt: 600 } },
