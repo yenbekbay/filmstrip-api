@@ -15,6 +15,7 @@
   },
   "scripts": {
     "deploy": "sh ./scripts/deploy.sh",
+    "run-migration": "node -r dotenv/config -r babel-register scripts/run-migration.js",
     "run-job": "node -r dotenv/config -r babel-register scripts/run-job.js",
     "start": "npm run start:server",
     "start:worker": "node -r dotenv/config -r babel-register src/worker",
