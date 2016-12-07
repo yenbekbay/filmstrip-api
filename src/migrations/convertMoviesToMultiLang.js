@@ -24,7 +24,6 @@ const convertMoviesToMultiLang = async () => {
             ...movie.info,
             ...multiLangInfoUpdate('credits'),
             ...multiLangInfoUpdate('genres'),
-            ...multiLangInfoUpdate('keywords'),
             ...multiLangInfoUpdate('posterUrl'),
             ...multiLangInfoUpdate('productionCountries'),
             ...multiLangInfoUpdate('synopsis'),

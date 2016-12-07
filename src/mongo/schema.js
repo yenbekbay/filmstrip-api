@@ -46,7 +46,7 @@ type MovieInfo {
   originalTitle: String
   posterUrl(lang: Language!): String
   productionCountries(lang: Language!): [String!]!
-  releaseDate: String!
+  releaseDate: String
   rtCriticsRating: Int
   rtCriticsRatingVoteCount: Int
   runtime: Int

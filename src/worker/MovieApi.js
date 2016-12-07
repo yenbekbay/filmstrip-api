@@ -1,61 +1,17 @@
 /* @flow */
 
-import { filter } from 'graphql-anywhere';
 import { Tmdb, Imdb, Kinopoisk } from 'movie-api';
 import _ from 'lodash/fp';
-import gql from 'graphql-tag';
 
 import { tmdbApiKey, imdbUserId } from '../env';
 import type { MovieInfo } from '../types';
 
-const TMDB_MOVIE_INFO_QUERY = gql`
-  {
-    backdropUrl
-    genres
-    imdbId
-    keywords
-    originalLanguage
-    originalTitle
-    posterUrl
-    productionCountries { iso_3166_1 }
-    releaseDate
-    runtime
-    synopsis
-    title
-    tmdbId
-    tmdbRating
-    tmdbRatingVoteCount
-    credits {
-      cast {
-        character
-        name
-        photoUrl
-      }
-      crew {
-        directors {
-          name
-          photoUrl
-        }
-      }
-    }
-    videos {
-      iso_639_1
-      key
-      site
-      type
-    }
-  }
-`;
-const KP_MOVIE_INFO_QUERY = gql`
-  {
-    kpId
-    kpRating
-    kpRatingVoteCount
-    mpaaRating
-    rtCriticsRating
-    rtCriticsRatingVoteCount
-  }
-`;
+const trailersFromTmdbVideos = (videos: Array<Object>) => _.flow(
+  _.filter(({ type, site }: Object) => (
+    type === 'Trailer' && site === 'YouTube'
+  )),
+  _.map('key'),
+)(videos);
 
 type Query = {
   title: string,
@@ -75,87 +31,135 @@ class MovieApi {
   });
   _kp = new Kinopoisk();
 
-  _getTmdbInfo = async ({ title, year, imdbId, tmdbId }: Query) => {
-    const movieId = tmdbId || await this._tmdb.getMovieId(
-      imdbId ? { imdbId } : { title, year },
+  _getTmdbId = async (query: Query) => {
+    if (query.tmdbId) return query.tmdbId;
+
+    return this._tmdb.getMovieId(
+      query.imdbId
+        ? { imdbId: query.imdbId }
+        : { title: query.title, year: query.year },
     );
-
-    return movieId
-      ? filter(TMDB_MOVIE_INFO_QUERY, await this._tmdb.getMovieInfo(movieId))
-      : {};
   };
 
-  _getKinopoiskInfo = async ({ title, year, kpId }: Query) => {
-    const movieId = kpId || await this._kp.getFilmId({ title, year });
+  _getKpId = async (query: Query) => {
+    if (query.kpId) return query.kpId;
 
-    return movieId
-      ? filter(KP_MOVIE_INFO_QUERY, await this._kp.getFilmInfo(movieId))
-      : {};
+    return this._kp.getFilmId({
+      title: query.title,
+      year: query.year,
+    });
   };
+
+  _getTmdbInfo = async (tmdbId: ?number) => ({
+    en: tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, 'en')) || {}) : {},
+    ru: tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, 'ru')) || {}) : {},
+  });
+
+  _getKpInfo = async (kpId: ?number) => (
+    kpId ? ((await this._kp.getFilmInfo(kpId)) || {}) : {}
+  );
+
+  _getKpCredits = async (kpId: ?number) => (
+    kpId ? (await this._kp.getFilmCredits(kpId)) : null
+  );
+
+  _getImdbRating = async (imdbId: ?string) => (
+    imdbId
+      ? (await this._imdb.getRating(imdbId))
+      : { imdbRating: NaN, imdbRatingVoteCount: NaN }
+  );
+
+  _getImdbPopularity = async (imdbId: ?string) => (
+    imdbId
+      ? (await this._imdb.getPopularity(imdbId))
+      : NaN
+  );
 
   getMovieInfo = async (query: Query): Promise<?MovieInfo> => {
-    const tmdbInfo = await this._getTmdbInfo(query);
-
-    if (!tmdbInfo) return null;
-
-    const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
-      this._getKinopoiskInfo(query),
-      this._imdb.getRating(query.imdbId || tmdbInfo.imdbId),
-      this._imdb.getPopularity(query.imdbId || tmdbInfo.imdbId),
+    const [tmdbId, kpId] = await Promise.all([
+      this._getTmdbId(query),
+      this._getKpId(query),
+    ]);
+    const [tmdbInfo, kpInfo, kpCredits] = await Promise.all([
+      this._getTmdbInfo(tmdbId),
+      this._getKpInfo(kpId),
+      this._getKpCredits(kpId),
+    ]);
+    const imdbId = query.imdbId || tmdbInfo.en.imdbId;
+    const [imdbRating, imdbPopularity] = await Promise.all([
+      this._getImdbRating(imdbId),
+      this._getImdbPopularity(imdbId),
     ]);
 
     return {
-      backdropUrl: tmdbInfo.backdropUrl,
-      credits: { en: tmdbInfo.credits },
-      genres: { en: tmdbInfo.genres },
+      backdropUrl: tmdbInfo.en.backdropUrl,
+      credits: {
+        en: tmdbInfo.en.credits,
+        ru: kpCredits || tmdbInfo.ru.credits,
+      },
+      genres: {
+        en: tmdbInfo.en.genres,
+        ru: kpInfo.genres || tmdbInfo.ru.genres,
+      },
       imdbId: tmdbInfo.imdbId || query.imdbId,
-      imdbRating: imdbRating.imdbRating,
-      imdbRatingVoteCount: imdbRating.imdbRatingVoteCount,
-      keywords: { en: tmdbInfo.keywords },
-      kpId: kpInfo.kpId || query.kpId,
+      imdbPopularity: imdbPopularity || NaN,
+      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating,
+      imdbRatingVoteCount:
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount,
+      keywords: tmdbInfo.en.keywords,
+      kpId,
       kpRating: kpInfo.kpRating,
       kpRatingVoteCount: kpInfo.kpRatingVoteCount,
       mpaaRating: kpInfo.mpaaRating,
-      originalLanguage: tmdbInfo.originalLanguage,
-      originalTitle: tmdbInfo.originalTitle,
-      posterUrl: { en: tmdbInfo.posterUrl },
-      productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
-      releaseDate: tmdbInfo.releaseDate,
+      originalLanguage: tmdbInfo.en.originalLanguage,
+      originalTitle: tmdbInfo.en.originalTitle,
+      posterUrl: {
+        en: tmdbInfo.en.posterUrl,
+        ru: tmdbInfo.ru.posterUrl,
+      },
+      productionCountries: {
+        en: _.map('iso_3166_1', tmdbInfo.en.productionCountries),
+        ru: kpInfo.productionCountries,
+      },
+      releaseDate: tmdbInfo.en.releaseDate,
       rtCriticsRating: kpInfo.rtCriticsRating,
       rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount,
-      runtime: tmdbInfo.runtime,
-      synopsis: { en: tmdbInfo.synopsis },
-      title: { en: tmdbInfo.title },
-      tmdbId: tmdbInfo.tmdbId || query.tmdbId,
-      tmdbRating: tmdbInfo.tmdbRating,
-      tmdbRatingVoteCount: tmdbInfo.tmdbRatingVoteCount,
-      imdbPopularity: imdbPopularity && imdbPopularity < 1000
-        ? imdbPopularity
-        : NaN,
+      runtime: tmdbInfo.en.runtime,
+      synopsis: {
+        en: tmdbInfo.en.synopsis,
+        ru: kpInfo.synopsis || tmdbInfo.ru.synopsis,
+      },
+      title: {
+        en: tmdbInfo.en.title,
+        ru: kpInfo.title || tmdbInfo.ru.title,
+      },
+      tmdbId: parseInt(tmdbInfo.en.tmdbId, 10) || query.tmdbId,
+      tmdbRating: tmdbInfo.en.tmdbRating,
+      tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount,
       youtubeIds: {
-        en: _.flow(
-          _.filter(({ type, site }: Object) => (
-            type === 'Trailer' && site === 'YouTube'
-          )),
-          _.map('key'),
-        )(tmdbInfo.videos),
+        en: trailersFromTmdbVideos(tmdbInfo.en.videos),
+        ru: trailersFromTmdbVideos(tmdbInfo.ru.videos),
       },
     };
   };
 
   getUpdates = async (query: Query): Promise<?Object> => {
+    const kpId = await this._getKpId(query);
     const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
-      this._getKinopoiskInfo(query),
-      this._imdb.getRating(query.imdbId),
-      this._imdb.getPopularity(query.imdbId),
+      this._getKpInfo(kpId),
+      this._getImdbRating(query.imdbId),
+      this._getImdbPopularity(query.imdbId),
     ]);
 
     return {
-      ...imdbRating,
-      ...kpInfo,
-      imdbPopularity: imdbPopularity && imdbPopularity < 1000
-        ? imdbPopularity
-        : null,
+      imdbPopularity: imdbPopularity || NaN,
+      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating,
+      imdbRatingVoteCount:
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount,
+      kpRating: kpInfo.kpRating,
+      kpRatingVoteCount: kpInfo.kpRatingVoteCount,
+      rtCriticsRating: kpInfo.rtCriticsRating,
+      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount,
     };
   };
 

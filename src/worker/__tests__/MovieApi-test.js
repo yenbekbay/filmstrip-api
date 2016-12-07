@@ -17,5 +17,5 @@ describe('MovieApi', () => {
       imdbId: 'tt2488496',
     });
     expect(modelFromObject(movieInfo)).toMatchSnapshot();
-  }, 10000);
+  }, 15000);
 });
