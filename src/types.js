@@ -1,5 +1,10 @@
 /* @flow */
 
+type MultiLanguage<T> = {
+  ru?: ?T,
+  en?: ?T,
+};
+
 export type MovieCastMember = {
   character?: ?string,
   name: string,
@@ -17,41 +22,46 @@ export type MovieCredits = {
 };
 export type MovieInfo = {
   backdropUrl: ?string,
-  credits: MovieCredits,
-  genres: Array<string>,
-  imdbId: string,
+  credits: MultiLanguage<MovieCredits>,
+  genres: MultiLanguage<Array<string>>,
+  imdbId: ?string,
   imdbPopularity: ?number,
-  imdbRating: number,
-  imdbRatingVoteCount: number,
-  keywords: Array<string>,
-  kpId?: number,
-  kpRating?: number,
-  kpRatingVoteCount?: number,
-  originalTitle: string,
-  posterUrl: ?string,
-  productionCountries: Array<string>,
+  imdbRating: ?number,
+  imdbRatingVoteCount: ?number,
+  keywords: MultiLanguage<Array<string>>,
+  kpId: ?number,
+  kpRating: ?number,
+  kpRatingVoteCount: ?number,
+  mpaaRating: ?string,
+  originalLanguage: ?string,
+  originalTitle: ?string,
+  posterUrl: MultiLanguage<string>,
+  productionCountries: MultiLanguage<Array<string>>,
   releaseDate: string,
-  rtCriticsRating?: number,
-  rtCriticsRatingVoteCount?: number,
+  rtCriticsRating: ?number,
+  rtCriticsRatingVoteCount: ?number,
   runtime: number,
-  synopsis: string,
-  title: string,
-  tmdbId: string,
-  tmdbRating: number,
-  tmdbRatingVoteCount: number,
-  torrentinoSlug?: string,
-  youtubeIds: Array<string>,
-  ytsId?: number,
+  synopsis: MultiLanguage<string>,
+  title: MultiLanguage<string>,
+  tmdbId: ?number,
+  tmdbRating: ?number,
+  tmdbRatingVoteCount: ?number,
+  torrentinoSlug?: ?string,
+  youtubeIds: MultiLanguage<Array<string>>,
+  ytsId?: ?number,
 };
 
 export type Torrent = {
+  audioTracks?: Array<string>,
+  audioTranslationType?: string,
+  bundledSubtitles?: Array<string>,
   magnetLink: string,
   name?: string,
   peers: number,
   quality: '720p' | '1080p',
   seeds: number,
   size: number,
-  source: 'The Pirate Bay' | 'YTS',
+  source: 'The Pirate Bay' | 'YTS' | 'Torrentino',
 };
 
 export type YtsRelease = {
@@ -63,6 +73,22 @@ export type YtsRelease = {
   year: number,
   youtubeId: string,
   ytsId: number,
+};
+export type TorrentinoRelease = {
+  info: {
+    credits: MovieCredits,
+    genres: Array<string>,
+    originalTitle: ?string,
+    posterUrl: ?string,
+    productionCountries: Array<string>,
+    releaseDate: ?string,
+    runtime: ?number,
+    synopsis: ?string,
+    title: string,
+    torrentinoSlug: string,
+    year: number,
+  },
+  torrents: Array<Torrent>,
 };
 
 export type Doc = {

@@ -10,19 +10,19 @@ import type { MovieInfo } from '../types';
 
 const TMDB_MOVIE_INFO_QUERY = gql`
   {
-    tmdbId
-    imdbId
     backdropUrl
     genres
+    imdbId
     keywords
-    originalTitle
     originalLanguage
+    originalTitle
     posterUrl
     productionCountries { iso_3166_1 }
     releaseDate
     runtime
     synopsis
     title
+    tmdbId
     tmdbRating
     tmdbRatingVoteCount
     credits {
@@ -51,16 +51,16 @@ const KP_MOVIE_INFO_QUERY = gql`
     kpId
     kpRating
     kpRatingVoteCount
+    mpaaRating
     rtCriticsRating
     rtCriticsRatingVoteCount
-    mpaaRating
   }
 `;
 
 type Query = {
   title: string,
   year: number,
-  imdbId: string,
+  imdbId?: ?string,
   tmdbId?: ?number,
   kpId?: ?number,
 };
@@ -75,8 +75,10 @@ class MovieApi {
   });
   _kp = new Kinopoisk();
 
-  _getTmdbInfo = async ({ imdbId, tmdbId }: Query) => {
-    const movieId = tmdbId || await this._tmdb.getMovieId({ imdbId });
+  _getTmdbInfo = async ({ title, year, imdbId, tmdbId }: Query) => {
+    const movieId = tmdbId || await this._tmdb.getMovieId(
+      imdbId ? { imdbId } : { title, year },
+    );
 
     return movieId
       ? filter(TMDB_MOVIE_INFO_QUERY, await this._tmdb.getMovieInfo(movieId))
@@ -103,19 +105,41 @@ class MovieApi {
     ]);
 
     return {
-      ..._.omit(['videos'], tmdbInfo),
-      ...imdbRating,
-      ...kpInfo,
+      backdropUrl: tmdbInfo.backdropUrl,
+      credits: { en: tmdbInfo.credits },
+      genres: { en: tmdbInfo.genres },
+      imdbId: tmdbInfo.imdbId || query.imdbId,
+      imdbRating: imdbRating.imdbRating,
+      imdbRatingVoteCount: imdbRating.imdbRatingVoteCount,
+      keywords: { en: tmdbInfo.keywords },
+      kpId: kpInfo.kpId || query.kpId,
+      kpRating: kpInfo.kpRating,
+      kpRatingVoteCount: kpInfo.kpRatingVoteCount,
+      mpaaRating: kpInfo.mpaaRating,
+      originalLanguage: tmdbInfo.originalLanguage,
+      originalTitle: tmdbInfo.originalTitle,
+      posterUrl: { en: tmdbInfo.posterUrl },
+      productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
+      releaseDate: tmdbInfo.releaseDate,
+      rtCriticsRating: kpInfo.rtCriticsRating,
+      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount,
+      runtime: tmdbInfo.runtime,
+      synopsis: { en: tmdbInfo.synopsis },
+      title: { en: tmdbInfo.title },
+      tmdbId: tmdbInfo.tmdbId || query.tmdbId,
+      tmdbRating: tmdbInfo.tmdbRating,
+      tmdbRatingVoteCount: tmdbInfo.tmdbRatingVoteCount,
       imdbPopularity: imdbPopularity && imdbPopularity < 1000
         ? imdbPopularity
-        : null,
-      productionCountries: _.map('iso_3166_1', tmdbInfo.productionCountries),
-      youtubeIds: _.flow(
-        _.filter(
-          ({ type, site }: Object) => type === 'Trailer' && site === 'YouTube',
-        ),
-        _.map('key'),
-      )(tmdbInfo.videos),
+        : NaN,
+      youtubeIds: {
+        en: _.flow(
+          _.filter(({ type, site }: Object) => (
+            type === 'Trailer' && site === 'YouTube'
+          )),
+          _.map('key'),
+        )(tmdbInfo.videos),
+      },
     };
   };
 
