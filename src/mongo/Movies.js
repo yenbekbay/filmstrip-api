@@ -33,12 +33,16 @@ const feedSortMappings = {
 
 const getMovieFeed = async (hashes: Array<string>) => Promise.all(
   hashes.map(async (hash: string) => {
-    const [type, rawGenres, offset, limit] = hash.split(':');
+    const { type, lang, genres, offset, limit } = JSON.parse(hash);
 
-    const genres = rawGenres ? rawGenres.split(',') : null;
     const query = {
       ...feedQueryMappings[type],
-      ...(genres ? { 'info.genres': { $all: genres } } : {}),
+      ...(
+        genres.length > 0
+          ? { [`info.genres.${lang}`]: { $all: genres } }
+          : {}
+      ),
+      [`torrents.${lang}`]: { $exists: true, $ne: [] },
     };
 
     const collection = await connector.getCollection('movies');
@@ -48,8 +52,8 @@ const getMovieFeed = async (hashes: Array<string>) => Promise.all(
       collection
         .find(query)
         .sort(feedSortMappings[type])
-        .skip(parseInt(offset, 10))
-        .limit(parseInt(limit, 10))
+        .skip(offset)
+        .limit(limit)
         .toArray(),
     ]);
 
@@ -62,15 +66,15 @@ const MovieFeedLoader = new DataLoader(getMovieFeed, {
   batch: false,
 });
 
-const matchOperatorsRegex = /[|\\{}()[\]^$+*?.]/g;
-const searchMoviesByQuery = async (queries: Array<string>) => Promise.all(
-  queries.map(async (query: string) => {
+const searchMoviesByQuery = async (hashes: Array<string>) => Promise.all(
+  hashes.map(async (hash: string) => {
+    const { query, lang } = JSON.parse(hash);
     const collection = await connector.getCollection('movies');
 
     const docs = await collection
       .find({
-        'info.title': {
-          $regex: `.*${query.replace(matchOperatorsRegex, '\\$&')}.*`,
+        [`info.title.${lang}`]: {
+          $regex: `.*${_.escapeRegExp(query)}.*`,
           $options: 'i',
         },
       })
@@ -81,6 +85,22 @@ const searchMoviesByQuery = async (queries: Array<string>) => Promise.all(
 );
 
 const MoviesSearchLoader = new DataLoader(searchMoviesByQuery, {
+  cacheMap: new CacheMap(1000 * 60 * 30), // cache for 30 minutes
+  batch: false,
+});
+
+const getMovieGenres = async (langs: Array<string>) => Promise.all(
+  langs.map(async (lang: string) => {
+    const collection = await connector.getCollection('movies');
+    const genres = await collection.distinct(`info.genres.${lang}`, {
+      [`torrents.${lang}`]: { $exists: true, $ne: [] },
+    });
+
+    return (genres || []).sort();
+  }),
+);
+
+const MovieGenresLoader = new DataLoader(getMovieGenres, {
   cacheMap: new CacheMap(1000 * 60 * 30), // cache for 30 minutes
   batch: false,
 });
@@ -115,11 +135,19 @@ const Movies = {
   },
   getFeed: async (
     type: FeedType,
+    lang: string,
     genres: Array<string>,
     offset: number,
     limit: number,
-  ): Promise<Feed> =>
-    MovieFeedLoader.load(`${type}:${genres.join(',')}:${offset}:${limit}`),
+  ): Promise<Feed> => MovieFeedLoader.load(
+    JSON.stringify({
+      type,
+      lang: lang.toLowerCase(),
+      genres,
+      offset,
+      limit,
+    }),
+  ),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 
@@ -148,18 +176,16 @@ const Movies = {
       updatedAt: new Date(),
     })));
   },
-  search: async (query: string): Promise<Array<MovieDoc>> => {
+  search: async (query: string, lang: string): Promise<Array<MovieDoc>> => {
     if (query.length < 3) return [];
 
-    return MoviesSearchLoader.load(query);
+    return MoviesSearchLoader.load(JSON.stringify({
+      query,
+      lang: lang.toLowerCase(),
+    }));
   },
-  genres: async (): Promise<Array<string>> => {
-    const collection = await connector.getCollection('movies');
-
-    const genres = await collection.distinct('info.genres');
-
-    return (genres || []).sort();
-  },
+  genres: async (lang: string): Promise<Array<string>> =>
+    MovieGenresLoader.load(lang.toLowerCase()),
 };
 
 export default Movies;

@@ -27,8 +27,9 @@ class Torrentino {
           },
         );
 
-        const movieNodes =
-          $('.m-right > .showcase > .tiles > .tile[data-movie-id]').get();
+        const movieNodes = $(
+          '.main > section > .showcase > .tiles > .tile[data-movie-id]',
+        ).get();
 
         const releases = _.compact(
           movieNodes.map((el: Object) => {

@@ -2,14 +2,16 @@
 
 import _ from 'lodash/fp';
 
+import languagesEn from '../../data/languages/en.json';
+import languagesRu from '../../data/languages/ru.json';
 import type { MovieInfo, Torrent, MovieDoc } from '../types';
 
-const schema = [`
-enum Language {
-  EN
-  RU
-}
+const languages = {
+  en: languagesEn,
+  ru: languagesRu,
+};
 
+const schema = [`
 type MovieCastMember {
   character: String
   name: String!
@@ -42,7 +44,7 @@ type MovieInfo {
   kpRating: Float
   kpRatingVoteCount: Int
   mpaaRating: String
-  originalLanguage: String
+  originalLanguage(lang: Language!): String
   originalTitle: String
   posterUrl(lang: Language!): String
   productionCountries(lang: Language!): [String!]!
@@ -64,16 +66,20 @@ type MovieInfo {
 enum TorrentSource {
   THE_PIRATE_BAY
   YTS
+  TORRENTINO
 }
 
 type Torrent {
-  source: TorrentSource!
+  audioTracks(lang: Language!): [String!]
+  audioTranslationType: String
+  bundledSubtitles(lang: Language!): [String!]
+  magnetLink: String!
   name: String
-  size: Float!
-  seeds: Int!
   peers: Int!
   quality: String!
-  magnetLink: String!
+  seeds: Int!
+  size: Float!
+  source: TorrentSource!
 }
 
 type Movie {
@@ -89,13 +95,14 @@ const getMultiLangInfoFieldOr = (
   key: string,
   lang: string,
   info: MovieInfo,
-) => _.getOr(
-  lang === 'EN'
+) => {
+  const fallbackVal = lang === 'EN'
     ? defaultVal
-    : getMultiLangInfoFieldOr(defaultVal, key, 'EN', info),
-  `${key}.${lang.toLowerCase()}`,
-  info,
-);
+    : getMultiLangInfoFieldOr(defaultVal, key, 'EN', info);
+  const val = _.get(`${key}.${lang.toLowerCase()}`, info);
+
+  return val && !_.isEqual(val, []) ? val : fallbackVal;
+};
 
 const resolvers = {
   MovieInfo: {
@@ -106,6 +113,11 @@ const resolvers = {
       ),
     genres: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr([], 'genres', lang, info),
+    originalLanguage: (info: MovieInfo, { lang }: { lang: string }) => (
+      info.originalLanguage
+        ? languages[lang.toLowerCase()][info.originalLanguage]
+        : null
+    ),
     posterUrl: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr(null, 'posterUrl', lang, info),
     productionCountries: (info: MovieInfo, { lang }: { lang: string }) =>
@@ -118,7 +130,23 @@ const resolvers = {
       getMultiLangInfoFieldOr([], 'youtubeIds', lang, info),
   },
   Torrent: {
-    source: ({ source }: Torrent) => source.replace(' ', '_').toUpperCase(),
+    audioTracks: ({ audioTracks }: Torrent, { lang }: { lang: string }) => (
+      audioTracks
+        ? audioTracks.map((audioTrack: string) =>
+            languages[lang.toLowerCase()][audioTrack],
+          )
+        : null
+    ),
+    bundledSubtitles: (
+      { bundledSubtitles }: Torrent, { lang }: { lang: string },
+    ) => (
+      bundledSubtitles
+        ? bundledSubtitles.map((bundledSubtitle: string) =>
+            languages[lang.toLowerCase()][bundledSubtitle],
+          )
+        : null
+    ),
+    source: ({ source }: Torrent) => source.replace(/ /g, '_').toUpperCase(),
   },
   Movie: {
     id: (movie: MovieDoc) => movie._id,
