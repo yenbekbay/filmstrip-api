@@ -32,14 +32,22 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of updateableMovies) {
+    const title: string = ((movie.info.title.en || movie.info.title.ru): any);
+
     try {
-      const updates = await movieApi.getUpdates(movie.info);
+      const updates = await movieApi.getUpdates({
+        title,
+        year: movie.info.year,
+        imdbId: movie.info.imdbId,
+        tmdbId: movie.info.tmdbId,
+        kpId: movie.info.kpId,
+      });
 
       if (updates) {
         const prevImdbPopularity = movie.info.imdbPopularity;
 
         if (!updates.imdbPopularity) {
-          logger.warn(`No IMDB popularity found for movie ${movie.info.title}`);
+          logger.warn(`No IMDB popularity found for movie ${title}`);
         }
 
         await Movies.updateOne(movie._id, {
@@ -51,16 +59,16 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
               : updates.imdbPopularity,
           },
         });
-        logger.info(`Updated info for movie "${movie.info.title}"`);
+        logger.info(`Updated info for movie "${title}"`);
       } else {
-        logger.warn(`Failed to get updates for movie "${movie.info.title}"`);
+        logger.warn(`Failed to get updates for movie "${title}"`);
       }
 
       // Let's be good guys
       await new Promise((resolve: () => void) => setTimeout(resolve, 4000));
     } catch (err) {
       logger.error(
-        `Failed to update info for movie "${movie.info.title}":`,
+        `Failed to update info for movie "${title}":`,
         err.message,
       );
       logger.verbose(err.stack);

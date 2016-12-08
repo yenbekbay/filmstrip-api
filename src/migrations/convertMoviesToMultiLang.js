@@ -30,6 +30,9 @@ const convertMoviesToMultiLang = async () => {
             ...multiLangInfoUpdate('title'),
             ...multiLangInfoUpdate('youtubeIds'),
           },
+          torrents: {
+            en: movie.torrents,
+          },
         },
       },
     );

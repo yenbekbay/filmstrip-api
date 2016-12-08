@@ -38,7 +38,7 @@ type MovieInfo {
   imdbPopularity: Int
   imdbRating: Float
   imdbRatingVoteCount: Int
-  keywords(lang: Language!): [String!]!
+  keywords: [String!]!
   kpRating: Float
   kpRatingVoteCount: Int
   mpaaRating: String
@@ -56,6 +56,7 @@ type MovieInfo {
   tmdbRating: Float
   tmdbRatingVoteCount: Int
   torrentinoSlug: String
+  year: Int
   youtubeIds(lang: Language!): [String!]!
   ytsId: Int
 }
@@ -79,7 +80,7 @@ type Movie {
   id: String!
   slug: String!
   info: MovieInfo!
-  torrents: [Torrent!]!
+  torrents(lang: Language!): [Torrent!]!
 }
 `];
 
@@ -105,8 +106,6 @@ const resolvers = {
       ),
     genres: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr([], 'genres', lang, info),
-    keywords: (info: MovieInfo, { lang }: { lang: string }) =>
-      getMultiLangInfoFieldOr([], 'keywords', lang, info),
     posterUrl: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr(null, 'posterUrl', lang, info),
     productionCountries: (info: MovieInfo, { lang }: { lang: string }) =>
@@ -123,6 +122,8 @@ const resolvers = {
   },
   Movie: {
     id: (movie: MovieDoc) => movie._id,
+    torrents: (movie: MovieDoc, { lang }: { lang: string }) =>
+      _.getOr([], `torrents.${lang.toLowerCase()}`, movie),
   },
 };
 

@@ -4,7 +4,7 @@ import { Tmdb, Imdb, Kinopoisk } from 'movie-api';
 import _ from 'lodash/fp';
 
 import { tmdbApiKey, imdbUserId } from '../env';
-import type { MovieInfo } from '../types';
+import type { MovieCredits, MovieInfo } from '../types';
 
 const trailersFromTmdbVideos = (videos: Array<Object>) => _.flow(
   _.filter(({ type, site }: Object) => (
@@ -91,15 +91,19 @@ class MovieApi {
       this._getImdbPopularity(imdbId),
     ]);
 
+    if (!tmdbInfo.en.title && !tmdbInfo.ru.title && !kpInfo.title) {
+      return null;
+    }
+
     return {
-      backdropUrl: tmdbInfo.en.backdropUrl,
+      backdropUrl: tmdbInfo.en.backdropUrl || _.head(kpInfo.stills),
       credits: {
-        en: tmdbInfo.en.credits,
-        ru: kpCredits || tmdbInfo.ru.credits,
+        en: ((tmdbInfo.en.credits: any): MovieCredits),
+        ru: (((kpCredits || tmdbInfo.ru.credits): any): MovieCredits),
       },
       genres: {
-        en: tmdbInfo.en.genres,
-        ru: kpInfo.genres || tmdbInfo.ru.genres,
+        en: tmdbInfo.en.genres || [],
+        ru: kpInfo.genres || tmdbInfo.ru.genres || [],
       },
       imdbId: tmdbInfo.imdbId || query.imdbId,
       imdbPopularity: imdbPopularity || NaN,
@@ -108,23 +112,23 @@ class MovieApi {
         imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount,
       keywords: tmdbInfo.en.keywords,
       kpId,
-      kpRating: kpInfo.kpRating,
-      kpRatingVoteCount: kpInfo.kpRatingVoteCount,
+      kpRating: kpInfo.kpRating || NaN,
+      kpRatingVoteCount: kpInfo.kpRatingVoteCount || NaN,
       mpaaRating: kpInfo.mpaaRating,
       originalLanguage: tmdbInfo.en.originalLanguage,
-      originalTitle: tmdbInfo.en.originalTitle,
+      originalTitle: tmdbInfo.en.originalTitle || kpInfo.originalTitle,
       posterUrl: {
         en: tmdbInfo.en.posterUrl,
-        ru: tmdbInfo.ru.posterUrl,
+        ru: tmdbInfo.ru.posterUrl || kpInfo.posterUrl,
       },
       productionCountries: {
         en: _.map('iso_3166_1', tmdbInfo.en.productionCountries),
-        ru: kpInfo.productionCountries,
+        ru: kpInfo.productionCountries || [],
       },
       releaseDate: tmdbInfo.en.releaseDate,
-      rtCriticsRating: kpInfo.rtCriticsRating,
-      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount,
-      runtime: tmdbInfo.en.runtime,
+      rtCriticsRating: kpInfo.rtCriticsRating || NaN,
+      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount || NaN,
+      runtime: tmdbInfo.en.runtime || kpInfo.runtime,
       synopsis: {
         en: tmdbInfo.en.synopsis,
         ru: kpInfo.synopsis || tmdbInfo.ru.synopsis,
@@ -136,6 +140,8 @@ class MovieApi {
       tmdbId: parseInt(tmdbInfo.en.tmdbId, 10) || query.tmdbId,
       tmdbRating: tmdbInfo.en.tmdbRating,
       tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount,
+      year: kpInfo.year ||
+        (tmdbInfo.releaseDate ? tmdbInfo.releaseDate.slice(0, 4) : NaN),
       youtubeIds: {
         en: trailersFromTmdbVideos(tmdbInfo.en.videos),
         ru: trailersFromTmdbVideos(tmdbInfo.ru.videos),
@@ -163,10 +169,10 @@ class MovieApi {
     };
   };
 
-  findMovie = async (query: {
+  findMatchOnTmdb = async (query: {
     title: string,
     year: number,
-    imdbId: ?string,
+    imdbId?: ?string,
   }): Promise<?{ tmdbId: number, title: string }> => {
     if (query.imdbId) {
       const res = await this._tmdb._connector.apiGet(
@@ -178,10 +184,7 @@ class MovieApi {
         _.getOr([], 'movie_results'),
         _.head,
         (movie: ?{ id: number, title: string }) => (
-          !movie ? null : ({
-            tmdbId: movie.id,
-            title: movie.title,
-          })
+          movie ? ({ tmdbId: movie.id, title: movie.title }) : null
         ),
       )(res);
     }
@@ -195,10 +198,7 @@ class MovieApi {
       _.getOr([], 'results'),
       _.head,
       (movie: ?{ id: number, title: string }) => (
-        !movie ? null : ({
-          tmdbId: movie.id,
-          title: movie.title,
-        })
+        movie ? ({ tmdbId: movie.id, title: movie.title }) : null
       ),
     )(res);
   };

@@ -8,11 +8,11 @@ type MultiLanguage<T> = {
 export type MovieCastMember = {
   character?: ?string,
   name: string,
-  photoUrl: string,
+  photoUrl: ?string,
 };
 export type MovieCrewMember = {
   name: string,
-  photoUrl: string,
+  photoUrl: ?string,
 };
 export type MovieCredits = {
   cast: Array<MovieCastMember>,
@@ -47,6 +47,7 @@ export type MovieInfo = {
   tmdbRating: ?number,
   tmdbRatingVoteCount: ?number,
   torrentinoSlug?: ?string,
+  year: number,
   youtubeIds: MultiLanguage<Array<string>>,
   ytsId?: ?number,
 };
@@ -99,7 +100,7 @@ export type Doc = {
 export type Movie = {
   slug: string,
   info: MovieInfo,
-  torrents: Array<Torrent>,
+  torrents: MultiLanguage<Array<Torrent>>,
 };
 export type MovieDoc = Doc & Movie;
 

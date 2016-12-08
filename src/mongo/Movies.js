@@ -11,19 +11,6 @@ import CacheMap from '../lib/CacheMap';
 import connector from './connector';
 import type { Movie, MovieDoc, FeedType } from '../types';
 
-const getMovieByTmdbId = async (tmdbIds: Array<number>) => {
-  const collection = await connector.getCollection('movies');
-  const docs = await collection
-    .find({ 'info.tmdbId': { $in: tmdbIds } })
-    .toArray();
-
-  return tmdbIds.map(
-    (tmdbId: number) => _.find(_.matchesProperty('info.tmdbId', tmdbId), docs),
-  );
-};
-
-const MovieByTmdbIdLoader = new DataLoader(getMovieByTmdbId, { cache: false });
-
 const getMovieBySlug = async (slugs: Array<string>) => {
   const collection = await connector.getCollection('movies');
   const docs = await collection.find({ slug: { $in: slugs } }).toArray();
@@ -104,9 +91,12 @@ type Feed = {
 };
 
 const Movies = {
-  getByTmdbId: (tmdbId: number): Promise<?MovieDoc> =>
-    MovieByTmdbIdLoader.load(tmdbId),
   getBySlug: (slug: string): Promise<?MovieDoc> => MovieBySlugLoader.load(slug),
+  getByQuery: async (query: { [key: string]: mixed }) => {
+    const collection = await connector.getCollection('movies');
+
+    return collection.findOne(query);
+  },
   getUpdateable: async (query: void | Object): Promise<Array<MovieDoc>> => {
     const collection = await connector.getCollection('movies');
 
@@ -141,16 +131,22 @@ const Movies = {
   insertOne: async (movie: Movie) => {
     const collection = await connector.getCollection('movies');
 
-    return collection.insertOne(movie);
+    return collection.insertOne({
+      ...movie,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
   },
   insertAll: async (movies: Array<Movie>) => {
     if (movies.length === 0) return [];
 
     const collection = await connector.getCollection('movies');
 
-    return movies.length > 1
-      ? collection.insertMany(movies)
-      : collection.insertOne(movies[0]);
+    return collection.insertMany(movies.map((movie: Movie) => ({
+      ...movie,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })));
   },
   search: async (query: string): Promise<Array<MovieDoc>> => {
     if (query.length < 3) return [];
