@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "agenda": "^0.9.0",
+    "async-retry": "^0.2.1",
     "babel-runtime": "^6.18.0",
     "body-parser": "^1.15.2",
     "bytes": "^2.4.0",
