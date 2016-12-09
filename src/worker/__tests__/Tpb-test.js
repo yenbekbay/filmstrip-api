@@ -3,7 +3,10 @@
 import { modelFromObject } from '../../test-utils';
 import Tpb from '../Tpb';
 
-const movieTitle = 'Pete\'s Dragon';
+const query = {
+  title: 'Pete\'s Dragon',
+  year: 2016,
+};
 
 describe('getTpbTorrents', () => {
   let tpb: Tpb;
@@ -13,7 +16,7 @@ describe('getTpbTorrents', () => {
   });
 
   it('fetches a list of torrents for a given query', async () => {
-    const torrents = await tpb.getTorrentsForMovie(movieTitle);
+    const torrents = await tpb.getTorrentsForMovie(query);
     expect(modelFromObject({ torrents })).toMatchSnapshot();
   });
 

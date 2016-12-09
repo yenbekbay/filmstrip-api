@@ -109,7 +109,7 @@ const saveNewEnMovies = async (context: JobContext) => {
     try {
       const [info, tpbTorrents] = await Promise.all([
         movieApi.getMovieInfo({ ...movie }),
-        tpb.getTorrentsForMovie(movie.title),
+        tpb.getTorrentsForMovie({ ...movie }),
       ]);
 
       if (info && (tpbTorrents.length > 0 || !!movie.torrents)) {

@@ -88,12 +88,12 @@ const saveNewRuMovies = async (context: JobContext) => {
       ]);
 
       if (info && torrentinoRelease && torrentinoRelease.torrents.length > 0) {
-        const tpbTorrents = info.title.en
-          ? (await tpb.getTorrentsForMovie(info.title.en))
-          : [];
-
         const title: string = ((info.title.en || info.title.ru): any);
         const year = info.year || movie.year;
+
+        const tpbTorrents = info.title.en
+          ? (await tpb.getTorrentsForMovie({ title: info.title.en, year }))
+          : [];
 
         await Movies.insertOne({
           slug: `${slugify(title).toLowerCase()}-${year}`,

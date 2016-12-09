@@ -18,15 +18,16 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
   for (const movie of updateableMovies) {
     const {
       title: { en: enTitle, ru: ruTitle },
-      ytsId,
       torrentinoSlug,
+      year,
+      ytsId,
     } = movie.info;
     const title: string = ((enTitle || ruTitle): any);
 
     try {
       const [tpbTorrents, ytsRelease, torrentinoRelease] = await Promise.all([
         enTitle
-          ? tpb.getTorrentsForMovie(enTitle)
+          ? tpb.getTorrentsForMovie({ title: enTitle, year })
           : Promise.resolve([]),
         ytsId
           ? yts.getReleaseDetails(ytsId)
