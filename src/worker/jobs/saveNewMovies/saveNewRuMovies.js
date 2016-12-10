@@ -76,7 +76,7 @@ const saveNewRuMovies = async (context: JobContext) => {
 
   const allMovies = await newMoviesFromTorrentino(context);
 
-  const movies = isProduction ? allMovies : allMovies.slice(0, 1);
+  const movies = isProduction ? allMovies : allMovies.slice(0, 2);
   let savedCount = 0;
 
   // eslint-disable-next-line no-restricted-syntax
@@ -124,7 +124,7 @@ const saveNewRuMovies = async (context: JobContext) => {
     }
   }
 
-  logger.info(`Saved ${savedCount} new movies`);
+  logger.info(`Saved ${savedCount} new movies in Russian`);
 };
 
 export default saveNewRuMovies;

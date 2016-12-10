@@ -101,7 +101,7 @@ const saveNewEnMovies = async (context: JobContext) => {
   // remove duplicates
   const allMovies = _.uniqBy('title', [...ytsMovies, ...tpbMovies]);
 
-  const movies = isProduction ? allMovies : allMovies.slice(0, 1);
+  const movies = isProduction ? allMovies : allMovies.slice(0, 2);
   let savedCount = 0;
 
   // eslint-disable-next-line no-restricted-syntax
