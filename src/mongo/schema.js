@@ -55,9 +55,12 @@ type MovieInfo {
   synopsis(lang: Language!): String
   title(lang: Language!): String!
   tmdbId: Int
+  tmdbPopularity: Float
   tmdbRating: Float
   tmdbRatingVoteCount: Int
   torrentinoSlug: String
+  traktSlug: String
+  traktWatchers: Int
   year: Int
   youtubeIds(lang: Language!): [String!]!
   ytsId: Int

@@ -1,9 +1,9 @@
 /* @flow */
 
-import { Tmdb, Imdb, Kinopoisk } from 'movie-api';
+import { Tmdb, Imdb, Kinopoisk, Trakt } from 'movie-api';
 import _ from 'lodash/fp';
 
-import { tmdbApiKey, imdbUserId } from '../env';
+import { tmdbApiKey, imdbUserId, traktApiKey } from '../env';
 import type { MovieCredits, MovieInfo } from '../types';
 
 const trailersFromTmdbVideos = (videos: Array<Object>) => _.flow(
@@ -19,6 +19,7 @@ type Query = {
   imdbId?: ?string,
   tmdbId?: ?number,
   kpId?: ?number,
+  traktSlug?: ?string,
 };
 
 class MovieApi {
@@ -30,6 +31,9 @@ class MovieApi {
     userId: imdbUserId,
   });
   _kp = new Kinopoisk();
+  _trakt = new Trakt({
+    apiKey: traktApiKey,
+  });
 
   _getTmdbId = async (query: Query) => {
     if (query.tmdbId) return query.tmdbId;
@@ -50,9 +54,21 @@ class MovieApi {
     });
   };
 
+  _getTraktSlug = async (query: Query) => {
+    if (query.traktSlug) return query.traktSlug;
+
+    return !query.tmdbId ? null : this._trakt.getSlug({
+      tmdbId: query.tmdbId,
+    });
+  };
+
+  _getTmdbInfoForLang = async (tmdbId: ?number, lang: string) => (
+    tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, lang)) || {}) : {}
+  );
+
   _getTmdbInfo = async (tmdbId: ?number) => ({
-    en: tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, 'en')) || {}) : {},
-    ru: tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, 'ru')) || {}) : {},
+    en: await this._getTmdbInfoForLang(tmdbId, 'en'),
+    ru: await this._getTmdbInfoForLang(tmdbId, 'ru'),
   });
 
   _getKpInfo = async (kpId: ?number) => (
@@ -70,25 +86,35 @@ class MovieApi {
   );
 
   _getImdbPopularity = async (imdbId: ?string) => (
-    imdbId
-      ? (await this._imdb.getPopularity(imdbId))
-      : NaN
+    imdbId ? (await this._imdb.getPopularity(imdbId)) : NaN
   );
+
+  _getTraktWatchers = async (traktSlug: ?string) => {
+    if (!traktSlug) return NaN;
+
+    const res: ?Array<Object> = await this._trakt._connector.apiGet(
+      `movies/${traktSlug}/watching`,
+    );
+
+    return res ? res.length : NaN;
+  };
 
   getMovieInfo = async (query: Query): Promise<?MovieInfo> => {
     const [tmdbId, kpId] = await Promise.all([
       this._getTmdbId(query),
       this._getKpId(query),
     ]);
-    const [tmdbInfo, kpInfo, kpCredits] = await Promise.all([
+    const [traktSlug, tmdbInfo, kpInfo, kpCredits] = await Promise.all([
+      this._getTraktSlug({ ...query, tmdbId }),
       this._getTmdbInfo(tmdbId),
       this._getKpInfo(kpId),
       this._getKpCredits(kpId),
     ]);
     const imdbId = query.imdbId || tmdbInfo.en.imdbId;
-    const [imdbRating, imdbPopularity] = await Promise.all([
+    const [imdbRating, imdbPopularity, traktWatchers] = await Promise.all([
       this._getImdbRating(imdbId),
       this._getImdbPopularity(imdbId),
+      this._getTraktWatchers(traktSlug),
     ]);
 
     if (!tmdbInfo.en.title && !tmdbInfo.ru.title && !kpInfo.title) {
@@ -107,9 +133,9 @@ class MovieApi {
       },
       imdbId: tmdbInfo.imdbId || query.imdbId,
       imdbPopularity: imdbPopularity || NaN,
-      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating,
+      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
       imdbRatingVoteCount:
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount,
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,
       keywords: tmdbInfo.en.keywords,
       kpId,
       kpRating: kpInfo.kpRating || NaN,
@@ -138,10 +164,16 @@ class MovieApi {
         ru: kpInfo.title || tmdbInfo.ru.title,
       },
       tmdbId: parseInt(tmdbInfo.en.tmdbId, 10) || query.tmdbId,
-      tmdbRating: tmdbInfo.en.tmdbRating,
-      tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount,
-      year: kpInfo.year ||
-        (tmdbInfo.releaseDate ? tmdbInfo.releaseDate.slice(0, 4) : NaN),
+      tmdbPopularity: tmdbInfo.en.tmdbPopularity || NaN,
+      tmdbRating: tmdbInfo.en.tmdbRating || NaN,
+      tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount || NaN,
+      traktSlug,
+      traktWatchers,
+      year: kpInfo.year || (
+        tmdbInfo.en.releaseDate
+          ? parseInt(tmdbInfo.en.releaseDate.slice(0, 4), 10)
+          : NaN
+      ),
       youtubeIds: {
         en: trailersFromTmdbVideos(tmdbInfo.en.videos),
         ru: trailersFromTmdbVideos(tmdbInfo.ru.videos),
@@ -150,22 +182,32 @@ class MovieApi {
   };
 
   getUpdates = async (query: Query): Promise<?Object> => {
-    const kpId = await this._getKpId(query);
-    const [kpInfo, imdbRating, imdbPopularity] = await Promise.all([
+    const [tmdbId, kpId, traktSlug] = await Promise.all([
+      this._getTmdbId(query),
+      this._getKpId(query),
+      this._getTraktSlug(query),
+    ]);
+    const [
+      tmdbInfo, kpInfo, imdbRating, imdbPopularity, traktWatchers,
+    ] = await Promise.all([
+      this._getTmdbInfoForLang(tmdbId, 'en'),
       this._getKpInfo(kpId),
       this._getImdbRating(query.imdbId),
       this._getImdbPopularity(query.imdbId),
+      this._getTraktWatchers(traktSlug),
     ]);
 
     return {
       imdbPopularity: imdbPopularity || NaN,
-      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating,
+      imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
       imdbRatingVoteCount:
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount,
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,
       kpRating: kpInfo.kpRating,
-      kpRatingVoteCount: kpInfo.kpRatingVoteCount,
-      rtCriticsRating: kpInfo.rtCriticsRating,
-      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount,
+      kpRatingVoteCount: kpInfo.kpRatingVoteCount || NaN,
+      rtCriticsRating: kpInfo.rtCriticsRating || NaN,
+      rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount || NaN,
+      tmdbPopularity: tmdbInfo.tmdbPopularity || NaN,
+      traktWatchers,
     };
   };
 
