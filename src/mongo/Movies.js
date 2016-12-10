@@ -112,10 +112,17 @@ type Feed = {
 
 const Movies = {
   getBySlug: (slug: string): Promise<?MovieDoc> => MovieBySlugLoader.load(slug),
-  getByQuery: async (query: { [key: string]: mixed }) => {
+  getByQuery: async (query: { [key: string]: mixed }): Promise<?MovieDoc> => {
     const collection = await connector.getCollection('movies');
 
     return collection.findOne(query);
+  },
+  getAllByQuery: async (
+    query: { [key: string]: mixed },
+  ): Promise<Array<MovieDoc>> => {
+    const collection = await connector.getCollection('movies');
+
+    return collection.find(query).toArray();
   },
   getUpdateable: async (query: void | Object): Promise<Array<MovieDoc>> => {
     const collection = await connector.getCollection('movies');

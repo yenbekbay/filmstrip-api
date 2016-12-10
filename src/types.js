@@ -41,6 +41,7 @@ export type MovieInfo = {
   rtCriticsRating: ?number,
   rtCriticsRatingVoteCount: ?number,
   runtime: ?number,
+  stills: Array<string>,
   synopsis: MultiLanguage<string>,
   title: MultiLanguage<string>,
   tmdbId: ?number,

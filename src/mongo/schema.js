@@ -52,6 +52,7 @@ type MovieInfo {
   rtCriticsRating: Int
   rtCriticsRatingVoteCount: Int
   runtime: Int
+  stills: [String!]!
   synopsis(lang: Language!): String
   title(lang: Language!): String!
   tmdbId: Int
@@ -127,6 +128,7 @@ const resolvers = {
       getMultiLangInfoFieldOr([], 'productionCountries', lang, info),
     synopsis: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr(null, 'synopsis', lang, info),
+    stills: (info: MovieInfo) => (info.stills || []).slice(0, 20),
     title: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr(null, 'title', lang, info),
     youtubeIds: (info: MovieInfo, { lang }: { lang: string }) =>

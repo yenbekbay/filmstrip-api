@@ -155,6 +155,7 @@ class MovieApi {
       rtCriticsRating: kpInfo.rtCriticsRating || NaN,
       rtCriticsRatingVoteCount: kpInfo.rtCriticsRatingVoteCount || NaN,
       runtime: tmdbInfo.en.runtime || kpInfo.runtime,
+      stills: (kpInfo.stills || []).slice(0, 20),
       synopsis: {
         en: tmdbInfo.en.synopsis,
         ru: kpInfo.synopsis || tmdbInfo.ru.synopsis,
