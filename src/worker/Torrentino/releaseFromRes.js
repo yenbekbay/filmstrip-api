@@ -98,7 +98,7 @@ const torrentsFromRes = ($: () => Object) =>
         (videoWidth: ?string) => (videoWidth ? parseInt(videoWidth, 10) : null),
         _.cond([
           [_.gt(_, 1900), _.constant('1080p')],
-          [_.gt(_, 1200), _.constant('720p')],
+          [_.gt(_, 1000), _.constant('720p')],
           [_.stubTrue, _.constant('SD')],
         ]),
       )($(el).children('.video').text() || null);
@@ -152,8 +152,7 @@ const releaseFromRes = (
   const movieInfo = movieInfoFromRes($);
   if (!movieInfo) return null;
 
-  const torrents = torrentsFromRes($);
-  if (!torrents || torrents.length === 0) return null;
+  const torrents = torrentsFromRes($) || [];
 
   return {
     info: {
