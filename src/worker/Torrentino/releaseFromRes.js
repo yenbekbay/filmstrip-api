@@ -87,7 +87,7 @@ const movieInfoFromRes = ($: () => Object) => {
 };
 
 const torrentsFromRes = ($: () => Object) =>
-  $('.m-right > .entity > .list-start > .table-list')
+  $('.main > section > .entity > .list-start > .table-list')
     .first()
     .find('tr.item')
     .get()
