@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.9.1
+FROM node:alpine
 
 # Install git
 RUN apk add --update git && rm -rf /tmp/* /var/cache/apk/*
