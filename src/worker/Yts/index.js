@@ -15,12 +15,15 @@ class Yts {
     this._connector = new YtsConnector();
   }
 
-  getLatestReleases = async (): Promise<Array<YtsRelease>> => {
+  getLatestReleases = async (
+    page: void | number,
+  ): Promise<Array<YtsRelease>> => {
     const res = await this._connector.apiGet(
       'list_movies.json',
       {
         quality: '1080p',
         limit: 50,
+        page: page || 1,
       },
     );
     const currentYear = new Date().getFullYear();
