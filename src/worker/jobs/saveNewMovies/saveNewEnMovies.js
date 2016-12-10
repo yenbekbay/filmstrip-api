@@ -93,7 +93,7 @@ const newMoviesFromTpb = async (context: JobContext) => {
 };
 
 const saveNewEnMovies = async (context: JobContext) => {
-  const { logger, tpb, movieApi } = context;
+  const { logger, tpb, torrentino, movieApi } = context;
 
   const ytsMovies = await newMoviesFromYts(context);
   const tpbMovies = await newMoviesFromTpb(context);
@@ -112,7 +112,16 @@ const saveNewEnMovies = async (context: JobContext) => {
         tpb.getTorrentsForMovie({ ...movie }),
       ]);
 
-      if (info && (tpbTorrents.length > 0 || !!movie.torrents)) {
+      if (info) {
+        const torrentinoSlug = (info.kpId && info.title.ru)
+          ? (await torrentino.getTorrentinoSlug(
+              { title: info.title.ru, kpId: info.kpId },
+            ))
+          : null;
+        const torrentinoRelease = torrentinoSlug
+          ? (await torrentino.getReleaseDetails(torrentinoSlug))
+          : null;
+
         const title: string = ((info.title.en || info.title.ru): any);
         const year = info.year || movie.year;
 
@@ -120,9 +129,11 @@ const saveNewEnMovies = async (context: JobContext) => {
           slug: `${slugify(title).toLowerCase()}-${year}`,
           torrents: {
             en: [...(movie.torrents || []), ...tpbTorrents],
+            ru: torrentinoRelease ? torrentinoRelease.torrents : [],
           },
           info: {
             ...info,
+            torrentinoSlug,
             year,
             youtubeIds: {
               ...info.youtubeIds,
@@ -136,10 +147,8 @@ const saveNewEnMovies = async (context: JobContext) => {
 
         logger.info(`Saved movie "${movie.title}"`);
         savedCount += 1;
-      } else if (!info) {
-        logger.warn(`Failed to get info for movie "${movie.title}"`);
       } else {
-        logger.warn(`Failed to get torrents for movie "${movie.title}"`);
+        logger.warn(`Failed to get info for movie "${movie.title}"`);
       }
 
       // let's be good guys
