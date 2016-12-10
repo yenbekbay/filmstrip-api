@@ -121,11 +121,18 @@ class MovieApi {
       return null;
     }
 
+    const getCredits = (credits: *) => ({
+      cast: credits ? credits.cast.slice(0, 30) : [],
+      crew: {
+        directors: credits ? credits.crew.directors : [],
+      },
+    });
+
     return {
       backdropUrl: tmdbInfo.en.backdropUrl || _.head(kpInfo.stills),
       credits: {
-        en: ((tmdbInfo.en.credits: any): MovieCredits),
-        ru: (((kpCredits || tmdbInfo.ru.credits): any): MovieCredits),
+        en: getCredits(tmdbInfo.en.credits),
+        ru: kpCredits ? getCredits(kpCredits) : getCredits(tmdbInfo.ru.credits),
       },
       genres: {
         en: tmdbInfo.en.genres || [],

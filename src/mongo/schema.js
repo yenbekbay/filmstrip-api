@@ -4,7 +4,7 @@ import _ from 'lodash/fp';
 
 import languagesEn from '../../data/languages/en.json';
 import languagesRu from '../../data/languages/ru.json';
-import type { MovieInfo, Torrent, MovieDoc } from '../types';
+import type { MovieCredits, MovieInfo, Torrent, MovieDoc } from '../types';
 
 const languages = {
   en: languagesEn,
@@ -109,6 +109,9 @@ const getMultiLangInfoFieldOr = (
 };
 
 const resolvers = {
+  MovieCredits: {
+    cast: (credits: MovieCredits) => credits.cast.slice(0, 30),
+  },
   MovieInfo: {
     credits: (info: MovieInfo, { lang }: { lang: string }) =>
       getMultiLangInfoFieldOr(
