@@ -44,8 +44,6 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
       });
 
       if (updates) {
-        const prevImdbPopularity = movie.info.imdbPopularity;
-
         if (!updates.imdbPopularity) {
           logger.warn(`No IMDB popularity found for movie ${title}`);
         }
@@ -54,9 +52,6 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
           info: {
             ...movie.info,
             ...updates,
-            imdbPopularity: prevImdbPopularity && prevImdbPopularity < 1000
-              ? updates.imdbPopularity || prevImdbPopularity
-              : updates.imdbPopularity,
           },
         });
         logger.info(`Updated info for movie "${title}"`);
