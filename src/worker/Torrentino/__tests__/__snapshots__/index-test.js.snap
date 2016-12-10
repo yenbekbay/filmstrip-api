@@ -57,3 +57,5 @@ Object {
   ],
 }
 `;
+
+exports[`Torrentino finds a releases by a given query 1`] = `"770631-batman-v-superman-dawn-justice"`;

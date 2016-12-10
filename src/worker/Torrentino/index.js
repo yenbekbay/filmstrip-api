@@ -4,6 +4,7 @@ import _ from 'lodash/fp';
 import retry from 'async-retry';
 
 import releaseFromRes from './releaseFromRes';
+import releaseListFromRes from './releaseListFromRes';
 import TorrentinoConnector from './connector';
 
 class Torrentino {
@@ -27,24 +28,7 @@ class Torrentino {
           },
         );
 
-        const movieNodes = $(
-          '.main > section > .showcase > .tiles > .tile[data-movie-id]',
-        ).get();
-
-        const releases = _.compact(
-          movieNodes.map((el: Object) => {
-            const torrentinoSlug = _.replace(
-              '/movie/', '', $(el).children('a').first().attr('href'),
-            );
-            const title = $(el).find('a > .title > .name').text();
-            const year = parseInt($(el).find('a > .title > .year').text(), 10);
-            const kpId = parseInt(_.head(torrentinoSlug.match(/\d+/)), 10);
-
-            if (!torrentinoSlug || !title || !year || !kpId) return null;
-
-            return { torrentinoSlug, kpId, title, year };
-          }),
-        );
+        const releases = releaseListFromRes($);
 
         if (releases.length === 0) {
           throw new Error(noReleasesErrMessage);
@@ -62,15 +46,44 @@ class Torrentino {
     { retries: 5 },
   );
 
-  getReleaseDetails = async (slug: string) => {
-    const $ = await this._connector.htmlGet(`movie/${slug}`);
+  getReleaseDetails = async (slug: string) => retry(
+    async (bail: (err: Error) => void) => {
+      const noReleaseErrMessage =
+        `Failed to get Torrentino release for movie ${slug}`;
 
-    const release = releaseFromRes($, slug);
-    if (!release) {
-      throw new Error(`Failed to get Torrentino release for movie ${slug}`);
-    }
+      try {
+        const $ = await this._connector.htmlGet(`movie/${slug}`);
 
-    return release;
+        const release = releaseFromRes($, slug);
+        if (!release) {
+          throw new Error(noReleaseErrMessage);
+        }
+
+        return release;
+      } catch (err) {
+        if (err.message === noReleaseErrMessage) {
+          throw err;
+        }
+
+        return bail(err);
+      }
+    },
+    { retries: 5 },
+  );
+
+  getTorrentinoSlug = async (
+    query: { title: string, kpId: number },
+  ): Promise<?string> => {
+    const $ = await this._connector.htmlGet('search', {
+      type: 'movies',
+      search: query.title,
+    });
+
+    const releases = releaseListFromRes($).filter(
+      ({ kpId }: Object) => kpId === query.kpId,
+    );
+
+    return _.flow(_.head, _.get('torrentinoSlug'))(releases);
   };
 }
 
