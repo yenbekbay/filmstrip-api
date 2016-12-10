@@ -56,7 +56,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
       logger.info(`Updated torrents for movie "${title}"`);
 
       // Let's be good guys
-      await new Promise((resolve: () => void) => setTimeout(resolve, 4000));
+      await new Promise((resolve: () => void) => setTimeout(resolve, 3000));
     } catch (err) {
       logger.error(
         `Failed to update torrents for movie "${title}":`,

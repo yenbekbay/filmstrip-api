@@ -128,13 +128,13 @@ const Movies = {
     const collection = await connector.getCollection('movies');
 
     const date = new Date();
-    const dateMonthAgo = subMonthsFromDate(date, 1);
-    const dayAgo = subDaysFromDate(date, 0);
+    const oneMonthAgo = subMonthsFromDate(date, 1);
+    const oneDayAgo = subDaysFromDate(date, 1);
 
     return collection
       .find({
-        createdAt: { $gt: dateMonthAgo },
-        updatedAt: { $lt: dayAgo },
+        createdAt: { $gt: oneMonthAgo },
+        updatedAt: { $lt: oneDayAgo },
         ...query,
       })
       .sort({ createdAt: -1 })

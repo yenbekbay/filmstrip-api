@@ -12,21 +12,13 @@ import type { AgendaContext } from '../';
 const updateMovieInfo = async ({ logger }: AgendaContext) => {
   const movieApi = new MovieApi();
 
-  const threeMonthsAgo = formatDate(
-    subMonthsFromDate(new Date(), 3),
+  const sixMonthsAgo = formatDate(
+    subMonthsFromDate(new Date(), 6),
     'YYYY-MM-DD',
   );
 
   const updateableMovies = await Movies.getUpdateable({
-    $or: [
-      {
-        $and: [
-          { 'info.releaseDate': { $gt: threeMonthsAgo } },
-          { 'info.imdbPopularity': { $lt: 1000 } },
-        ],
-      },
-      { 'info.imdbPopularity': { $lt: 600 } },
-    ],
+    'info.releaseDate': { $gt: sixMonthsAgo },
   });
   logger.debug(`Updating info for ${updateableMovies.length} movies`);
 
