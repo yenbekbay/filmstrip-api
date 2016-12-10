@@ -21,12 +21,12 @@ const getMovieBySlug = async (slugs: Array<string>) => {
 const MovieBySlugLoader = new DataLoader(getMovieBySlug, { cache: false });
 
 const feedQueryMappings = {
-  TRENDING: { 'info.imdbPopularity': { $lt: 600 } },
+  TRENDING: {},
   NEW: {},
   LATEST: {},
 };
 const feedSortMappings = {
-  TRENDING: { 'info.imdbPopularity': 1 },
+  TRENDING: { 'info.traktWatchers': -1 },
   NEW: { 'info.releaseDate': -1 },
   LATEST: { createdAt: -1 },
 };
