@@ -87,7 +87,7 @@ const saveNewRuMovies = async (context: JobContext) => {
         torrentino.getReleaseDetails(movie.torrentinoSlug),
       ]);
 
-      if (info && torrentinoRelease && torrentinoRelease.torrents.length > 0) {
+      if (info) {
         const title: string = ((info.title.en || info.title.ru): any);
         const year = info.year || movie.year;
 
@@ -110,10 +110,8 @@ const saveNewRuMovies = async (context: JobContext) => {
 
         logger.info(`Saved movie "${movie.title}"`);
         savedCount += 1;
-      } else if (!info) {
-        logger.warn(`Failed to get info for movie "${movie.title}"`);
       } else {
-        logger.warn(`Failed to get torrents for movie "${movie.title}"`);
+        logger.warn(`Failed to get info for movie "${movie.title}"`);
       }
 
       // let's be good guys
