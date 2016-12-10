@@ -156,7 +156,10 @@ const resolvers = {
   Movie: {
     id: (movie: MovieDoc) => movie._id,
     torrents: (movie: MovieDoc, { lang }: { lang: string }) =>
-      _.getOr([], `torrents.${lang.toLowerCase()}`, movie),
+      _.flow(
+        _.getOr([], `torrents.${lang.toLowerCase()}`),
+        _.orderBy(['seeds'], ['desc']),
+      )(movie),
   },
 };
 
