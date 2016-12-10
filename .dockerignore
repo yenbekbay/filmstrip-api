@@ -1,6 +1,7 @@
 *
 !.env
 !build/
+!data/
 !healthchecks.json
 !package.json
 !pm2.json
