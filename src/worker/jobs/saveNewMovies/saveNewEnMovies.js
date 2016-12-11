@@ -162,6 +162,4 @@ const saveNewEnMovies = async (context: JobContext) => {
   logger.info(`Saved ${savedCount} new movies in English`);
 };
 
-saveNewEnMovies.interval = '00 04,12,20 * * *';
-
 export default saveNewEnMovies;

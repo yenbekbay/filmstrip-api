@@ -27,4 +27,6 @@ const saveNewMovies = async (context: AgendaContext) => {
   await saveNewRuMovies(jobContext);
 };
 
+saveNewMovies.interval = '00 04,12,20 * * *';
+
 export default saveNewMovies;
