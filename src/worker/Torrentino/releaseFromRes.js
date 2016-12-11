@@ -14,7 +14,7 @@ const validAudioTranslationTypes = [
 ];
 
 const movieInfoFromRes = ($: () => Object) => {
-  const headNode = $('.m-right > .entity > .head-plate > .head');
+  const headNode = $('.main > section > .entity > .head-plate > .head');
   const detailsNode = headNode.find('.specialty');
 
   const title = headNode.find('.header-group > h1').text() || null;
