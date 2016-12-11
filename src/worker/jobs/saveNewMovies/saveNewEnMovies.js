@@ -131,6 +131,7 @@ const saveNewEnMovies = async (context: JobContext) => {
             en: [...(movie.torrents || []), ...tpbTorrents],
             ru: torrentinoRelease ? torrentinoRelease.torrents : [],
           },
+          torrentsUpdatedAt: new Date(),
           info: {
             ...info,
             torrentinoSlug,
@@ -143,6 +144,7 @@ const saveNewEnMovies = async (context: JobContext) => {
             },
             ytsId: movie.ytsId,
           },
+          infoUpdatedAt: new Date(),
         });
 
         logger.info(`Saved movie "${movie.title}"`);

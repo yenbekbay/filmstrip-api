@@ -52,6 +52,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
           en: enTorrents,
           ru: ruTorrents,
         },
+        torrentsUpdatedAt: new Date(),
       });
       logger.info(`Updated torrents for movie "${title}"`);
 

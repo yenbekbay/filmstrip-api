@@ -45,6 +45,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
             ...movie.info,
             ...updates,
           },
+          infoUpdatedAt: new Date(),
         });
         logger.info(`Updated info for movie "${title}"`);
       } else {

@@ -101,11 +101,13 @@ const saveNewRuMovies = async (context: JobContext) => {
             en: tpbTorrents || [],
             ru: torrentinoRelease.torrents,
           },
+          torrentsUpdatedAt: new Date(),
           info: {
             ...info,
             torrentinoSlug: movie.torrentinoSlug,
             year,
           },
+          infoUpdatedAt: new Date(),
         });
 
         logger.info(`Saved movie "${movie.title}"`);
