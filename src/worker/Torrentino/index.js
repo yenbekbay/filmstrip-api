@@ -74,16 +74,24 @@ class Torrentino {
   getTorrentinoSlug = async (
     query: { title: string, kpId: number },
   ): Promise<?string> => {
-    const $ = await this._connector.htmlGet('search', {
-      type: 'movies',
-      search: query.title,
-    });
+    try {
+      const $ = await this._connector.htmlGet('search', {
+        type: 'movies',
+        search: query.title,
+      });
 
-    const releases = releaseListFromRes($).filter(
-      ({ kpId }: Object) => kpId === query.kpId,
-    );
+      const releases = releaseListFromRes($).filter(
+        ({ kpId }: Object) => kpId === query.kpId,
+      );
 
-    return _.flow(_.head, _.get('torrentinoSlug'))(releases);
+      return _.flow(_.head, _.get('torrentinoSlug'))(releases);
+    } catch (err) {
+      if (err.statusCode === 404) {
+        return null;
+      }
+
+      throw err;
+    }
   };
 }
 
