@@ -122,9 +122,9 @@ class MovieApi {
     }
 
     const getCredits = (credits: *) => ({
-      cast: credits ? credits.cast.slice(0, 30) : [],
+      cast: credits && credits.cast ? credits.cast.slice(0, 30) : [],
       crew: {
-        directors: credits ? credits.crew.directors : [],
+        directors: credits && credits.crew ? credits.crew.directors : [],
       },
     });
 
