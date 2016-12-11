@@ -140,18 +140,18 @@ const resolvers = {
   Torrent: {
     audioTracks: ({ audioTracks }: Torrent, { lang }: { lang: string }) => (
       audioTracks
-        ? audioTracks.map((audioTrack: string) =>
+        ? _.compact(audioTracks.map((audioTrack: string) =>
             languages[lang.toLowerCase()][audioTrack],
-          )
+          ))
         : null
     ),
     bundledSubtitles: (
       { bundledSubtitles }: Torrent, { lang }: { lang: string },
     ) => (
       bundledSubtitles
-        ? bundledSubtitles.map((bundledSubtitle: string) =>
+        ? _.compact(bundledSubtitles.map((bundledSubtitle: string) =>
             languages[lang.toLowerCase()][bundledSubtitle],
-          )
+          ))
         : null
     ),
     source: ({ source }: Torrent) => source.replace(/ /g, '_').toUpperCase(),
