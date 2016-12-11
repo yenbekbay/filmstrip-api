@@ -99,7 +99,6 @@ Object {
     "ru": "Array<string>",
   },
   "imdbId": "string",
-  "imdbPopularity": "number",
   "imdbRating": "number",
   "imdbRatingVoteCount": "number",
   "keywords": "Array<string>",

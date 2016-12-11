@@ -36,10 +36,6 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
       });
 
       if (updates) {
-        if (!updates.imdbPopularity) {
-          logger.warn(`No IMDB popularity found for movie ${title}`);
-        }
-
         await Movies.updateOne(movie._id, {
           info: {
             ...movie.info,

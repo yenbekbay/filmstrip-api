@@ -25,7 +25,6 @@ export type MovieInfo = {
   credits: MultiLanguage<MovieCredits>,
   genres: MultiLanguage<Array<string>>,
   imdbId: ?string,
-  imdbPopularity: ?number,
   imdbRating: ?number,
   imdbRatingVoteCount: ?number,
   keywords: ?Array<string>,

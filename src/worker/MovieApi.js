@@ -85,10 +85,6 @@ class MovieApi {
       : { imdbRating: NaN, imdbRatingVoteCount: NaN }
   );
 
-  _getImdbPopularity = async (imdbId: ?string) => (
-    imdbId ? (await this._imdb.getPopularity(imdbId)) : NaN
-  );
-
   _getTraktWatchers = async (traktSlug: ?string) => {
     if (!traktSlug) return NaN;
 
@@ -111,9 +107,8 @@ class MovieApi {
       this._getKpCredits(kpId),
     ]);
     const imdbId = query.imdbId || tmdbInfo.en.imdbId;
-    const [imdbRating, imdbPopularity, traktWatchers] = await Promise.all([
+    const [imdbRating, traktWatchers] = await Promise.all([
       this._getImdbRating(imdbId),
-      this._getImdbPopularity(imdbId),
       this._getTraktWatchers(traktSlug),
     ]);
 
@@ -139,7 +134,6 @@ class MovieApi {
         ru: kpInfo.genres || tmdbInfo.ru.genres || [],
       },
       imdbId: tmdbInfo.imdbId || query.imdbId,
-      imdbPopularity: imdbPopularity || NaN,
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
       imdbRatingVoteCount:
         imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,
@@ -196,17 +190,15 @@ class MovieApi {
       this._getTraktSlug(query),
     ]);
     const [
-      tmdbInfo, kpInfo, imdbRating, imdbPopularity, traktWatchers,
+      tmdbInfo, kpInfo, imdbRating, traktWatchers,
     ] = await Promise.all([
       this._getTmdbInfoForLang(tmdbId, 'en'),
       this._getKpInfo(kpId),
       this._getImdbRating(query.imdbId),
-      this._getImdbPopularity(query.imdbId),
       this._getTraktWatchers(traktSlug),
     ]);
 
     return {
-      imdbPopularity: imdbPopularity || NaN,
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
       imdbRatingVoteCount:
         imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,

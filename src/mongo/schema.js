@@ -37,7 +37,6 @@ type MovieInfo {
   credits(lang: Language!): MovieCredits!
   genres(lang: Language!): [String!]!
   imdbId: String
-  imdbPopularity: Int
   imdbRating: Float
   imdbRatingVoteCount: Int
   keywords: [String!]!
