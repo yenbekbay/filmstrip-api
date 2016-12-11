@@ -2,6 +2,7 @@
 
 import {
   format as formatDate,
+  subDays as subDaysFromDate,
   subMonths as subMonthsFromDate,
 } from 'date-fns';
 
@@ -12,19 +13,49 @@ import type { AgendaContext } from '../';
 const updateMovieInfo = async ({ logger }: AgendaContext) => {
   const movieApi = new MovieApi();
 
-  const sixMonthsAgo = formatDate(
-    subMonthsFromDate(new Date(), 6),
+  const date = new Date();
+  const oneDayAgo = subDaysFromDate(date, 1);
+  const fourDaysAgo = subDaysFromDate(date, 4);
+  const twoMonthsAgo = formatDate(
+    subMonthsFromDate(new Date(), 2),
     'YYYY-MM-DD',
   );
+  const withTorrentsQuery = {
+    $or: [
+      { 'torrents.en': { $ne: [] } },
+      { 'torrents.ru': { $ne: [] } },
+    ],
+  };
 
-  const updateableMovies = await Movies.getUpdateable({
-    'info.releaseDate': { $gt: sixMonthsAgo },
+  const newMovies = await Movies.getNewMoviesToUpdate({
+    ...withTorrentsQuery,
+    $or: [
+      { infoUpdatedAt: { $lt: oneDayAgo } },
+      { infoUpdatedAt: { $exists: false } },
+    ],
   });
-  logger.debug(`Updating info for ${updateableMovies.length} movies`);
+  logger.debug(`Updating info for ${newMovies.length} new movies`);
+
+  const oldMovies = await Movies.getOldMoviesToUpdate({
+    ...withTorrentsQuery,
+    $or: [
+      { infoUpdatedAt: { $lt: fourDaysAgo } },
+      { infoUpdatedAt: { $exists: false } },
+    ],
+  });
+  logger.debug(`Updating info for ${oldMovies.length} old movies`);
+
+  const movies = [...newMovies, ...oldMovies];
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const movie of updateableMovies) {
+  for (const movie of movies) {
     const title: string = ((movie.info.title.en || movie.info.title.ru): any);
+    const popularityOnly = !movie.info.releaseDate ||
+      movie.info.releaseDate < twoMonthsAgo;
+
+    if (popularityOnly) {
+      logger.debug(`Updating only popularity for movie "${title}"`);
+    }
 
     try {
       const updates = await movieApi.getUpdates({
@@ -33,6 +64,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
         imdbId: movie.info.imdbId,
         tmdbId: movie.info.tmdbId,
         kpId: movie.info.kpId,
+        popularityOnly,
       });
 
       if (updates) {

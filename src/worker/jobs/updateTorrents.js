@@ -1,5 +1,7 @@
 /* @flow */
 
+import { subDays as subDaysFromDate } from 'date-fns';
+
 import { Movies } from '../../mongo';
 import Torrentino from '../Torrentino';
 import Tpb from '../Tpb';
@@ -11,11 +13,30 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
   const tpb = new Tpb();
   const torrentino = new Torrentino();
 
-  const updateableMovies = await Movies.getUpdateable();
-  logger.debug(`Updating torrents for ${updateableMovies.length} movies`);
+  const date = new Date();
+  const oneDayAgo = subDaysFromDate(date, 1);
+  const fourDaysAgo = subDaysFromDate(date, 4);
+
+  const newMovies = await Movies.getNewMoviesToUpdate({
+    $or: [
+      { torrentsUpdatedAt: { $lt: oneDayAgo } },
+      { torrentsUpdatedAt: { $exists: false } },
+    ],
+  });
+  logger.debug(`Updating torrents for ${newMovies.length} new movies`);
+
+  const oldMovies = await Movies.getOldMoviesToUpdate({
+    $or: [
+      { torrentsUpdatedAt: { $lt: fourDaysAgo } },
+      { torrentsUpdatedAt: { $exists: false } },
+    ],
+  });
+  logger.debug(`Updating torrents for ${oldMovies.length} old movies`);
+
+  const movies = [...newMovies, ...oldMovies];
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const movie of updateableMovies) {
+  for (const movie of movies) {
     const {
       title: { en: enTitle, ru: ruTitle },
       torrentinoSlug,

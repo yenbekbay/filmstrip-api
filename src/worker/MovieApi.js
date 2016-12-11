@@ -116,7 +116,7 @@ class MovieApi {
       return null;
     }
 
-    const getCredits = (credits: *) => ({
+    const getCredits = (credits: any): MovieCredits => ({
       cast: credits && credits.cast ? credits.cast.slice(0, 30) : [],
       crew: {
         directors: credits && credits.crew ? credits.crew.directors : [],
@@ -183,15 +183,31 @@ class MovieApi {
     };
   };
 
-  getUpdates = async (query: Query): Promise<?Object> => {
+  getUpdates = async (
+    query: Query & { popularityOnly: boolean },
+  ): Promise<?Object> => {
+    if (query.popularityOnly) {
+      const [tmdbId, traktSlug] = await Promise.all([
+        this._getTmdbId(query),
+        this._getTraktSlug(query),
+      ]);
+      const [tmdbInfo, traktWatchers] = await Promise.all([
+        this._getTmdbInfoForLang(tmdbId, 'en'),
+        this._getTraktWatchers(traktSlug),
+      ]);
+
+      return {
+        tmdbPopularity: tmdbInfo.tmdbPopularity || NaN,
+        traktWatchers,
+      };
+    }
+
     const [tmdbId, kpId, traktSlug] = await Promise.all([
       this._getTmdbId(query),
       this._getKpId(query),
       this._getTraktSlug(query),
     ]);
-    const [
-      tmdbInfo, kpInfo, imdbRating, traktWatchers,
-    ] = await Promise.all([
+    const [tmdbInfo, kpInfo, imdbRating, traktWatchers] = await Promise.all([
       this._getTmdbInfoForLang(tmdbId, 'en'),
       this._getKpInfo(kpId),
       this._getImdbRating(query.imdbId),

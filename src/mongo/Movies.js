@@ -1,6 +1,7 @@
 /* @flow */
 
 import {
+  format as formatDate,
   subDays as subDaysFromDate,
   subMonths as subMonthsFromDate,
 } from 'date-fns';
@@ -124,21 +125,33 @@ const Movies = {
 
     return collection.find(query).toArray();
   },
-  getUpdateable: async (query: void | Object): Promise<Array<MovieDoc>> => {
-    const collection = await connector.getCollection('movies');
+  getNewMoviesToUpdate: async (
+    query: void | Object,
+  ): Promise<Array<MovieDoc>> => {
+    const sixMonthsAgo = formatDate(
+      subMonthsFromDate(new Date(), 6),
+      'YYYY-MM-DD',
+    );
 
-    const date = new Date();
-    const oneMonthAgo = subMonthsFromDate(date, 1);
-    const oneDayAgo = subDaysFromDate(date, 1);
+    return Movies.getAllByQuery({
+      'info.releaseDate': { $gt: sixMonthsAgo },
+      ...query,
+    });
+  },
+  getOldMoviesToUpdate: async (
+    query: void | Object,
+  ): Promise<Array<MovieDoc>> => {
+    const sixMonthsAgo = formatDate(
+      subMonthsFromDate(new Date(), 6),
+      'YYYY-MM-DD',
+    );
 
-    return collection
-      .find({
-        createdAt: { $gt: oneMonthAgo },
-        updatedAt: { $lt: oneDayAgo },
-        ...query,
-      })
-      .sort({ createdAt: -1 })
-      .toArray();
+    const docs = await Movies.getAllByQuery({
+      'info.releaseDate': { $lte: sixMonthsAgo },
+      ...query,
+    });
+
+    return _.flow(_.shuffle, _.slice(0, 10))(docs);
   },
   getFeed: async (
     type: FeedType,
