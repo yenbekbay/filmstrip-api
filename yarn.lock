@@ -1012,6 +1012,13 @@ babel-runtime@^6.0.0, babel-runtime@^6.11.6, babel-runtime@^6.18.0, babel-runtim
     core-js "^2.4.0"
     regenerator-runtime "^0.9.5"
 
+babel-runtime@^6.20.0:
+  version "6.20.0"
+  resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.20.0.tgz#87300bdcf4cd770f09bf0048c64204e17806d16f"
+  dependencies:
+    core-js "^2.4.0"
+    regenerator-runtime "^0.10.0"
+
 babel-template@^6.14.0, babel-template@^6.15.0, babel-template@^6.16.0, babel-template@^6.8.0:
   version "6.16.0"
   resolved "https://registry.yarnpkg.com/babel-template/-/babel-template-6.16.0.tgz#e149dd1a9f03a35f817ddbc4d0481988e7ebc8ca"
@@ -3716,9 +3723,13 @@ moment-timezone@^0.5.0, moment-timezone@~0.5.5:
   dependencies:
     moment ">= 2.6.0"
 
-"moment@>= 2.6.0", moment@^2.16.0:
+"moment@>= 2.6.0":
   version "2.16.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.16.0.tgz#f38f2c97c9889b0ee18fc6cc392e1e443ad2da8e"
+
+moment@^2.17.1:
+  version "2.17.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.17.1.tgz#fed9506063f36b10f066c8b59a144d7faebe1d82"
 
 mongodb-core@1.3.10:
   version "1.3.10"
@@ -3760,16 +3771,16 @@ morgan:
     on-finished "~2.3.0"
     on-headers "~1.0.1"
 
-movie-api@^0.14.1:
-  version "0.14.1"
-  resolved "https://registry.yarnpkg.com/movie-api/-/movie-api-0.14.1.tgz#59003028c10fe998d9bb9300e0793235751bb4f0"
+movie-api@^0.14.2:
+  version "0.14.2"
+  resolved "https://registry.yarnpkg.com/movie-api/-/movie-api-0.14.2.tgz#86076af462fdddc92be91fb425c456736133b3ce"
   dependencies:
     async-retry "^0.2.1"
-    babel-runtime "^6.18.0"
+    babel-runtime "^6.20.0"
     cheerio "^0.22.0"
     dataloader "^1.2.0"
     lodash.words "^4.2.0"
-    moment "^2.16.0"
+    moment "^2.17.1"
     parent-package-json "^2.0.0"
     promise-throttle "^0.3.1"
     ramda "^0.22.1"
@@ -4368,6 +4379,10 @@ redeyed@~1.0.0:
 regenerate@^1.2.1:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.3.2.tgz#d1941c67bad437e1be76433add5b385f95b19260"
+
+regenerator-runtime@^0.10.0:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.1.tgz#257f41961ce44558b18f7814af48c17559f9faeb"
 
 regenerator-runtime@^0.9.5:
   version "0.9.6"
