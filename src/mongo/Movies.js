@@ -2,7 +2,6 @@
 
 import {
   format as formatDate,
-  subDays as subDaysFromDate,
   subMonths as subMonthsFromDate,
 } from 'date-fns';
 import _ from 'lodash/fp';
