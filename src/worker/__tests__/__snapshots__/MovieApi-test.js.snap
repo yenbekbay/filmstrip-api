@@ -11,39 +11,7 @@ Object {
         },
       ],
       "crew": Object {
-        "cinematographers": Array [
-          Object {
-            "department": "string",
-            "job": "string",
-            "name": "string",
-            "photoUrl": "null",
-          },
-        ],
-        "composers": Array [
-          Object {
-            "department": "string",
-            "job": "string",
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
         "directors": Array [
-          Object {
-            "department": "string",
-            "job": "string",
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
-        "producers": Array [
-          Object {
-            "department": "string",
-            "job": "string",
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
-        "writers": Array [
           Object {
             "department": "string",
             "job": "string",
@@ -61,31 +29,7 @@ Object {
         },
       ],
       "crew": Object {
-        "cinematographers": Array [
-          Object {
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
-        "composers": Array [
-          Object {
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
         "directors": Array [
-          Object {
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
-        "producers": Array [
-          Object {
-            "name": "string",
-            "photoUrl": "string",
-          },
-        ],
-        "writers": Array [
           Object {
             "name": "string",
             "photoUrl": "string",
@@ -120,6 +64,7 @@ Object {
   "rtCriticsRating": "number",
   "rtCriticsRatingVoteCount": "number",
   "runtime": "number",
+  "stills": "Array<string>",
   "synopsis": Object {
     "en": "string",
     "ru": "string",
@@ -129,8 +74,12 @@ Object {
     "ru": "string",
   },
   "tmdbId": "number",
+  "tmdbPopularity": "number",
   "tmdbRating": "number",
   "tmdbRatingVoteCount": "number",
+  "traktSlug": "string",
+  "traktWatchers": "number",
+  "year": "number",
   "youtubeIds": Object {
     "en": "Array<string>",
     "ru": "Array<string>",
