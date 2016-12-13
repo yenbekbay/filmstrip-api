@@ -1,5 +1,10 @@
 [ignore]
-.*/node_modules/findup/test/.*
+.*/node_modules/.*/__test__/
+.*/node_modules/.*/__tests__/
+.*/node_modules/.*/test/
+.*/node_modules/.*/tests/
+.*/node_modules/babel.*
+<PROJECT_ROOT>/build/
 
 [libs]
 flow-typed/

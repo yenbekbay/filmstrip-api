@@ -102,9 +102,9 @@ export type Doc = {
 };
 export type Movie = {
   info: MovieInfo,
+  infoUpdatedAt: Date,
   slug: string,
   torrents: MultiLanguage<Array<Torrent>>,
-  infoUpdatedAt: Date,
   torrentsUpdatedAt: Date,
 };
 export type MovieDoc = Doc & Movie;
