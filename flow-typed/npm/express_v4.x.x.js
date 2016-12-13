@@ -1,5 +1,5 @@
-// flow-typed signature: 540efbb64c39df0f64e06608870891c2
-// flow-typed version: c72c426249/express_v4.x.x/flow_>=v0.25.x
+// flow-typed signature: 53b76c6024320737ff29a45fb413baa9
+// flow-typed version: 7334eae621/express_v4.x.x/flow_>=v0.28.x
 
 // @flow
 import type { Server } from 'http';
@@ -99,12 +99,6 @@ declare interface express$RouteMethodType<T> {
   (...middleware: Array<express$Middleware>): T;
   (path: string|RegExp|string[], ...middleware: Array<express$Middleware>): T;
 }
-declare interface express$RouterMethodType<T> {
-  (middleware: express$Middleware): T;
-  (...middleware: Array<express$Middleware>): T;
-  (path: string|RegExp|string[], ...middleware: Array<express$Middleware>): T;
-  (path: string, router: express$Router): T;
-}
 declare class express$Route {
   all: express$RouteMethodType<this>;
   get: express$RouteMethodType<this>;
@@ -139,9 +133,12 @@ declare class express$Route {
 
 declare class express$Router extends express$Route {
   constructor(options?: express$RouterOptions): void;
-  use: express$RouterMethodType<this>;
   route(path: string): express$Route;
   static (): express$Router;
+  use(middleware: express$Middleware): this;
+  use(...middleware: Array<express$Middleware>): this;
+  use(path: string|RegExp|string[], ...middleware: Array<express$Middleware>): this;
+  use(path: string, router: express$Router): this;
 }
 
 declare class express$Application extends express$Router mixins events$EventEmitter {
