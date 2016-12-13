@@ -22,6 +22,7 @@ const winstonLogger = new winston.Logger({
       colorize: true,
     }),
     (isProduction && papertrailHost && papertrailPort) && new Papertrail({
+      level: 'verbose',
       host: papertrailHost,
       port: papertrailPort,
       hostname: 'filmstrip',
