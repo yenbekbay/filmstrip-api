@@ -133,8 +133,15 @@ const Movies = {
     );
 
     return Movies.getAllByQuery({
-      'info.releaseDate': { $gt: sixMonthsAgo },
-      ...query,
+      $and: [
+        {
+          $or: [
+            { 'info.releaseDate': { $gt: sixMonthsAgo } },
+            { 'info.traktWatchers': { $gte: 15 } },
+          ],
+        },
+        query || {},
+      ],
     });
   },
   getOldMoviesToUpdate: async (
@@ -146,11 +153,16 @@ const Movies = {
     );
 
     const docs = await Movies.getAllByQuery({
-      'info.releaseDate': { $lte: sixMonthsAgo },
-      ...query,
+      $and: [
+        {
+          'info.releaseDate': { $lte: sixMonthsAgo },
+          'info.traktWatchers': { $lt: 15 },
+        },
+        query || {},
+      ],
     });
 
-    return _.flow(_.shuffle, _.slice(0, 10))(docs);
+    return _.flow(_.shuffle, _.slice(0, 40))(docs);
   },
   getFeed: async (
     type: FeedType,

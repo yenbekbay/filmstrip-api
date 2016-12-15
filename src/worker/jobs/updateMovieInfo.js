@@ -15,7 +15,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
 
   const date = new Date();
   const oneDayAgo = subDaysFromDate(date, 1);
-  const fourDaysAgo = subDaysFromDate(date, 4);
+  const sixDaysAgo = subDaysFromDate(date, 6);
   const twoMonthsAgo = formatDate(
     subMonthsFromDate(new Date(), 2),
     'YYYY-MM-DD',
@@ -39,7 +39,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
   const oldMovies = await Movies.getOldMoviesToUpdate({
     ...withTorrentsQuery,
     $or: [
-      { infoUpdatedAt: { $lt: fourDaysAgo } },
+      { infoUpdatedAt: { $lt: sixDaysAgo } },
       { infoUpdatedAt: { $exists: false } },
     ],
   });
