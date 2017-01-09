@@ -49,6 +49,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
+    /* eslint-disable no-await-in-loop */
     const title: string = ((movie.info.title.en || movie.info.title.ru): any);
     const popularityOnly = !movie.info.releaseDate ||
       movie.info.releaseDate < twoMonthsAgo;
@@ -89,6 +90,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
       );
       logger.verbose(err.stack);
     }
+    /* eslint-enable no-await-in-loop */
   }
 };
 

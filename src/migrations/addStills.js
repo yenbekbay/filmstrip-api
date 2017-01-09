@@ -16,6 +16,7 @@ const addStills = async () => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
+    /* eslint-disable no-await-in-loop */
     const title: string = ((movie.info.title.en || movie.info.title.ru): any);
 
     try {
@@ -35,6 +36,7 @@ const addStills = async () => {
       );
       console.info(err.stack);
     }
+    /* eslint-enable no-await-in-loop */
   }
 
   console.log(`Updated ${updatedCount} movies`);

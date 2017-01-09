@@ -106,6 +106,7 @@ const saveNewEnMovies = async (context: JobContext) => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
+    /* eslint-disable no-await-in-loop */
     try {
       const [info, tpbTorrents] = await Promise.all([
         movieApi.getMovieInfo({ ...movie }),
@@ -159,6 +160,7 @@ const saveNewEnMovies = async (context: JobContext) => {
       logger.error(`Failed to save movie "${movie.title}":`, err.message);
       logger.verbose(err.stack);
     }
+    /* eslint-enable no-await-in-loop */
   }
 
   logger.info(`Saved ${savedCount} new movies in English`);

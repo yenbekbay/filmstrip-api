@@ -37,6 +37,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
+    /* eslint-disable no-await-in-loop */
     const {
       title: { en: enTitle, ru: ruTitle },
       torrentinoSlug,
@@ -86,6 +87,7 @@ const updateTorrents = async ({ logger }: AgendaContext) => {
       );
       logger.verbose(err.stack);
     }
+    /* eslint-enable no-await-in-loop */
   }
 };
 

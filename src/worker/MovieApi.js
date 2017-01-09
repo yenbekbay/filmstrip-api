@@ -76,12 +76,12 @@ class MovieApi {
   );
 
   _getKpCredits = async (kpId: ?number) => (
-    kpId ? (await this._kp.getFilmCredits(kpId)) : null
+    kpId ? this._kp.getFilmCredits(kpId) : null
   );
 
   _getImdbRating = async (imdbId: ?string) => (
     imdbId
-      ? (await this._imdb.getRating(imdbId))
+      ? this._imdb.getRating(imdbId)
       : { imdbRating: NaN, imdbRatingVoteCount: NaN }
   );
 
