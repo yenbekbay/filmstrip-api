@@ -103,7 +103,7 @@ const torrentsFromRes = ($: () => Object) =>
         ]),
       )($(el).children('.video').text() || null);
 
-      const audioTranslationType = _.flow(
+      const audioTranslationType = _.thru(
         (audio: ?string) => (audio === '.  .' ? null : audio),
       )($(el).children('.audio').text() || null);
       const audioTracks = _.flow(
@@ -115,7 +115,7 @@ const torrentsFromRes = ($: () => Object) =>
         _.split(separatorRegex),
         _.compact,
       )($(el).children('.subtitles').text());
-      const size = _.flow(
+      const size = _.thru(
         (sizeInGb: string) => (
           _.includes('ГБ', sizeInGb)
             ? bytes(sizeInGb.replace(/\s+/, '').replace('ГБ', 'GB'))
