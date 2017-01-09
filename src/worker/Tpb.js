@@ -14,6 +14,9 @@ const blacklistedUploaders = [
   'jXTENZ8',
 ];
 
+const yearFromNameRegex = /(?:\(|\s+|\.)(\d{4})(?:\)|\s+|\.)/;
+const titleFromNameRegex = /(.+)(?:\(|\s+|\.)(?:\d{4})(?:\)|\s+|\.)/;
+
 class Tpb {
   getTorrentsForMovie = async (
     query: { title: string, year: number },
@@ -76,32 +79,30 @@ class Tpb {
       const results = await PirateBay.topTorrents(HD_MOVIES_CATEGORY);
 
       return _.flow(
+        _.map(({ name, uploader }: Object) => ({
+          name,
+          uploader,
+          year: parseInt(_.nth(1, name.match(yearFromNameRegex)), 10),
+        })),
         _.filter(
-          ({ name, uploader }: Object) =>
-            (
-              _.includes(currentYear, name) ||
-              _.includes(currentYear - 1, name)
-            ) &&
+          ({ name, year, uploader }: Object) =>
+            year && year >= (currentYear - 1) &&
             !_.includes('HC', name) &&
             !_.includes(uploader, blacklistedUploaders),
         ),
-        _.map(_.flow(
-          _.get('name'),
-          (name: string) => _.nth(
-            1, name.match(new RegExp(`(.*)\\(?${currentYear}\\)?`)),
-          ),
-          _.replace(/\($/, ''),
-          _.replace(/\./g, ' '),
-          _.replace(/\s+/g, ' '),
-          _.split('/'),
-          _.head,
-          _.trim,
-        )),
-        _.uniq,
-        _.map((title: string) => ({
-          title,
-          year: currentYear,
-        })),
+        _.map(({ name, year }: Object) => {
+          const title = _.flow(
+            _.nth(1),
+            _.replace(/\./g, ' '),
+            _.replace(/\s+/g, ' '),
+            _.split('/'),
+            _.head,
+            _.trim,
+          )(name.match(titleFromNameRegex));
+
+          return { title, year };
+        }),
+        _.uniqBy('title'),
       )(results);
     } catch (err) {
       if (_.includes('ECONNRESET', err.message)) {
