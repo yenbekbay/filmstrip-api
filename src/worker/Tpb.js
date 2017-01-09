@@ -78,7 +78,10 @@ class Tpb {
       return _.flow(
         _.filter(
           ({ name, uploader }: Object) =>
-            _.includes(currentYear, name) &&
+            (
+              _.includes(currentYear, name) ||
+              _.includes(currentYear - 1, name)
+            ) &&
             !_.includes('HC', name) &&
             !_.includes(uploader, blacklistedUploaders),
         ),
