@@ -88,6 +88,7 @@ class Tpb {
           ({ name, year, uploader }: Object) =>
             year && year >= (currentYear - 1) &&
             !_.includes('HC', name) &&
+            !_.includes('HDCAM', name) &&
             !_.includes(uploader, blacklistedUploaders),
         ),
         _.map(({ name, year }: Object) => {
