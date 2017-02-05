@@ -38,7 +38,7 @@ const updateTorrents = async ({logger}: AgendaContext) => {
   const movies = [...newMovies, ...oldMovies];
 
   await pEachSeries(movies, async (movie: MovieDoc) => {
-     const {
+    const {
       title: {en: enTitle, ru: ruTitle},
       torrentinoSlug,
       year,

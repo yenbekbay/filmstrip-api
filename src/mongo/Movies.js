@@ -158,23 +158,28 @@ const Movies = {
     return _.flow(_.shuffle, _.slice(0, 40))(docs);
   },
   getFeed: async (
-    {type, lang, genres, offset, limit}: {
+    {
+      type,
+      lang,
+      genres,
+      offset,
+      limit,
+    }: {
       type: FeedType,
       lang: string,
       genres: Array<string>,
       offset: number,
       limit: number,
     },
-  ): Promise<Feed> =>
-    MovieFeedLoader.load(
-      JSON.stringify({
-        type,
-        lang: lang.toLowerCase(),
-        genres,
-        offset,
-        limit,
-      }),
-    ),
+  ): Promise<Feed> => MovieFeedLoader.load(
+    JSON.stringify({
+      type,
+      lang: lang.toLowerCase(),
+      genres,
+      offset,
+      limit,
+    }),
+  ),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 

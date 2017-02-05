@@ -95,12 +95,19 @@ type Movie {
 `,
 ];
 
-const getMultiLangInfoField = ({defaultValue = null, key, lang, info}: {
-  defaultValue?: mixed,
-  key: string,
-  lang: string,
-  info: MovieInfo,
-}) => {
+const getMultiLangInfoField = (
+  {
+    defaultValue = null,
+    key,
+    lang,
+    info,
+  }: {
+    defaultValue?: mixed,
+    key: string,
+    lang: string,
+    info: MovieInfo,
+  },
+) => {
   const fallbackVal = lang === 'EN'
     ? defaultValue
     : getMultiLangInfoField({defaultValue, key, lang: 'EN', info});
@@ -121,13 +128,12 @@ const resolvers = {
         lang,
         info,
       }),
-    genres: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoField({
-        defaultValue: [],
-        key: 'genres',
-        lang,
-        info,
-      }),
+    genres: (info: MovieInfo, {lang}: {lang: string}) => getMultiLangInfoField({
+      defaultValue: [],
+      key: 'genres',
+      lang,
+      info,
+    }),
     originalLanguage: (info: MovieInfo, {lang}: {lang: string}) =>
       info.originalLanguage
         ? languages[lang.toLowerCase()][info.originalLanguage]
@@ -152,12 +158,11 @@ const resolvers = {
         info,
       }),
     stills: (info: MovieInfo) => (info.stills || []).slice(0, 20),
-    title: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoField({
-        key: 'title',
-        lang,
-        info,
-      }),
+    title: (info: MovieInfo, {lang}: {lang: string}) => getMultiLangInfoField({
+      key: 'title',
+      lang,
+      info,
+    }),
     youtubeIds: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoField({
         defaultValue: [],
