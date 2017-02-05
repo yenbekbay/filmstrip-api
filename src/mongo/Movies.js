@@ -1,24 +1,21 @@
 /* @flow */
 
-import {
-  format as formatDate,
-  subMonths as subMonthsFromDate,
-} from 'date-fns';
+import {format as formatDate, subMonths as subMonthsFromDate} from 'date-fns';
 import _ from 'lodash/fp';
 import DataLoader from 'dataloader';
 
 import CacheMap from '../lib/CacheMap';
 import connector from './connector';
-import type { Movie, MovieDoc, FeedType } from '../types';
+import type {Movie, MovieDoc, FeedType} from '../types';
 
 const getMovieBySlug = async (slugs: Array<string>) => {
   const collection = await connector.getCollection('movies');
-  const docs = await collection.find({ slug: { $in: slugs } }).toArray();
+  const docs = await collection.find({slug: {$in: slugs}}).toArray();
 
-  return slugs.map((slug: string) => _.find({ slug }, docs));
+  return slugs.map((slug: string) => _.find({slug}, docs));
 };
 
-const MovieBySlugLoader = new DataLoader(getMovieBySlug, { cache: false });
+const MovieBySlugLoader = new DataLoader(getMovieBySlug, {cache: false});
 
 const feedQueryMappings = {
   TRENDING: {},
@@ -26,23 +23,19 @@ const feedQueryMappings = {
   LATEST: {},
 };
 const feedSortMappings = {
-  TRENDING: { 'info.traktWatchers': -1 },
-  NEW: { 'info.releaseDate': -1 },
-  LATEST: { createdAt: -1 },
+  TRENDING: {'info.traktWatchers': -1},
+  NEW: {'info.releaseDate': -1},
+  LATEST: {createdAt: -1},
 };
 
 const getMovieFeed = async (hashes: Array<string>) => Promise.all(
   hashes.map(async (hash: string) => {
-    const { type, lang, genres, offset, limit } = JSON.parse(hash);
+    const {type, lang, genres, offset, limit} = JSON.parse(hash);
 
     const query = {
       ...feedQueryMappings[type],
-      ...(
-        genres.length > 0
-          ? { [`info.genres.${lang}`]: { $all: genres } }
-          : {}
-      ),
-      [`torrents.${lang}`]: { $exists: true, $ne: [] },
+      ...(genres.length > 0 ? {[`info.genres.${lang}`]: {$all: genres}} : {}),
+      [`torrents.${lang}`]: {$exists: true, $ne: []},
     };
 
     const collection = await connector.getCollection('movies');
@@ -57,7 +50,7 @@ const getMovieFeed = async (hashes: Array<string>) => Promise.all(
         .toArray(),
     ]);
 
-    return { count, nodes };
+    return {count, nodes};
   }),
 );
 
@@ -68,7 +61,7 @@ const MovieFeedLoader = new DataLoader(getMovieFeed, {
 
 const searchMoviesByQuery = async (hashes: Array<string>) => Promise.all(
   hashes.map(async (hash: string) => {
-    const { query, lang } = JSON.parse(hash);
+    const {query, lang} = JSON.parse(hash);
     const collection = await connector.getCollection('movies');
 
     const docs = await collection
@@ -93,7 +86,7 @@ const getMovieGenres = async (langs: Array<string>) => Promise.all(
   langs.map(async (lang: string) => {
     const collection = await connector.getCollection('movies');
     const genres = await collection.distinct(`info.genres.${lang}`, {
-      [`torrents.${lang}`]: { $exists: true, $ne: [] },
+      [`torrents.${lang}`]: {$exists: true, $ne: []},
     });
 
     return (genres || []).sort();
@@ -112,13 +105,13 @@ type Feed = {
 
 const Movies = {
   getBySlug: (slug: string): Promise<?MovieDoc> => MovieBySlugLoader.load(slug),
-  getByQuery: async (query: { [key: string]: mixed }): Promise<?MovieDoc> => {
+  getByQuery: async (query: {[key: string]: mixed}): Promise<?MovieDoc> => {
     const collection = await connector.getCollection('movies');
 
     return collection.findOne(query);
   },
   getAllByQuery: async (
-    query: { [key: string]: mixed },
+    query: {[key: string]: mixed},
   ): Promise<Array<MovieDoc>> => {
     const collection = await connector.getCollection('movies');
 
@@ -136,8 +129,8 @@ const Movies = {
       $and: [
         {
           $or: [
-            { 'info.releaseDate': { $gt: sixMonthsAgo } },
-            { 'info.traktWatchers': { $gte: 15 } },
+            {'info.releaseDate': {$gt: sixMonthsAgo}},
+            {'info.traktWatchers': {$gte: 15}},
           ],
         },
         query || {},
@@ -155,8 +148,8 @@ const Movies = {
     const docs = await Movies.getAllByQuery({
       $and: [
         {
-          'info.releaseDate': { $lte: sixMonthsAgo },
-          'info.traktWatchers': { $lt: 15 },
+          'info.releaseDate': {$lte: sixMonthsAgo},
+          'info.traktWatchers': {$lt: 15},
         },
         query || {},
       ],
@@ -170,22 +163,22 @@ const Movies = {
     genres: Array<string>,
     offset: number,
     limit: number,
-  ): Promise<Feed> => MovieFeedLoader.load(
-    JSON.stringify({
-      type,
-      lang: lang.toLowerCase(),
-      genres,
-      offset,
-      limit,
-    }),
-  ),
+  ): Promise<Feed> =>
+    MovieFeedLoader.load(
+      JSON.stringify({
+        type,
+        lang: lang.toLowerCase(),
+        genres,
+        offset,
+        limit,
+      }),
+    ),
   updateOne: async (id: string, data: Object) => {
     const collection = await connector.getCollection('movies');
 
-    return collection.updateOne(
-      { _id: id },
-      { $set: { ...data, updatedAt: new Date() } },
-    );
+    return collection.updateOne({_id: id}, {
+      $set: {...data, updatedAt: new Date()},
+    });
   },
   insertOne: async (movie: Movie) => {
     const collection = await connector.getCollection('movies');
@@ -201,19 +194,23 @@ const Movies = {
 
     const collection = await connector.getCollection('movies');
 
-    return collection.insertMany(movies.map((movie: Movie) => ({
-      ...movie,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })));
+    return collection.insertMany(
+      movies.map((movie: Movie) => ({
+        ...movie,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+    );
   },
   search: async (query: string, lang: string): Promise<Array<MovieDoc>> => {
     if (query.length < 3) return [];
 
-    return MoviesSearchLoader.load(JSON.stringify({
-      query,
-      lang: lang.toLowerCase(),
-    }));
+    return MoviesSearchLoader.load(
+      JSON.stringify({
+        query,
+        lang: lang.toLowerCase(),
+      }),
+    );
   },
   genres: async (lang: string): Promise<Array<string>> =>
     MovieGenresLoader.load(lang.toLowerCase()),

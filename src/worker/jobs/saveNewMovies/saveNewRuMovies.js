@@ -3,12 +3,12 @@
 import _ from 'lodash/fp';
 import slugify from 'slugify';
 
-import { isProduction } from '../../../env';
-import { Movies } from '../../../mongo';
-import type { JobContext } from './';
+import {isProduction} from '../../../env';
+import {Movies} from '../../../mongo';
+import type {JobContext} from './';
 
 const ensureNewMovie = async (
-  { logger, movieApi }: JobContext,
+  {logger, movieApi}: JobContext,
   query: {
     kpId?: ?number,
     title: string,
@@ -16,16 +16,17 @@ const ensureNewMovie = async (
   },
 ) => {
   try {
-    const tmdbMatch = await movieApi.findMatchOnTmdb({ ...query });
+    const tmdbMatch = await movieApi.findMatchOnTmdb({...query});
     const savedMovieByQuery = await Movies.getByQuery({
       $or: _.compact([
-        { 'info.title.ru': query.title, 'info.year': query.year },
-        query.kpId && { 'info.kpId': query.kpId },
-        tmdbMatch && {
-          'info.title.en': tmdbMatch.title,
-          'info.year': query.year,
-        },
-        tmdbMatch && { 'info.tmdbId': tmdbMatch.tmdbId },
+        {'info.title.ru': query.title, 'info.year': query.year},
+        query.kpId && {'info.kpId': query.kpId},
+        tmdbMatch &&
+          {
+            'info.title.en': tmdbMatch.title,
+            'info.year': query.year,
+          },
+        tmdbMatch && {'info.tmdbId': tmdbMatch.tmdbId},
       ]),
     });
     if (savedMovieByQuery) {
@@ -45,34 +46,36 @@ const ensureNewMovie = async (
 };
 
 const newMoviesFromTorrentino = async (context: JobContext) => {
-  const { logger, torrentino } = context;
+  const {logger, torrentino} = context;
 
   const releases = await torrentino.getLatestReleases();
   logger.debug(`Got ${releases.length} releases from Torrentino`);
 
-  return _.compact(await Promise.all(
-    releases.reverse().map(async (
-      release: {
-        kpId: number,
-        title: string,
-        torrentinoSlug: string,
-        year: number,
-      },
-    ) => {
-      const newMovie = await ensureNewMovie(context, { ...release });
-      if (!newMovie) return null;
+  return _.compact(
+    await Promise.all(
+      releases.reverse().map(async (
+        release: {
+          kpId: number,
+          title: string,
+          torrentinoSlug: string,
+          year: number,
+        },
+      ) => {
+        const newMovie = await ensureNewMovie(context, {...release});
+        if (!newMovie) return null;
 
-      return {
-        ...newMovie,
-        kpId: release.kpId,
-        torrentinoSlug: release.torrentinoSlug,
-      };
-    }),
-  ));
+        return {
+          ...newMovie,
+          kpId: release.kpId,
+          torrentinoSlug: release.torrentinoSlug,
+        };
+      }),
+    ),
+  );
 };
 
 const saveNewRuMovies = async (context: JobContext) => {
-  const { logger, torrentino, tpb, movieApi } = context;
+  const {logger, torrentino, tpb, movieApi} = context;
 
   const allMovies = await newMoviesFromTorrentino(context);
 
@@ -89,11 +92,11 @@ const saveNewRuMovies = async (context: JobContext) => {
       ]);
 
       if (info) {
-        const title: string = ((info.title.en || info.title.ru): any);
+        const title: string = (info.title.en || info.title.ru: any);
         const year = info.year || movie.year;
 
         const tpbTorrents = info.title.en
-          ? (await tpb.getTorrentsForMovie({ title: info.title.en, year }))
+          ? await tpb.getTorrentsForMovie({title: info.title.en, year})
           : [];
 
         await Movies.insertOne({

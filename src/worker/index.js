@@ -1,13 +1,13 @@
 /* @flow */
 
-import { existsSync, readFileSync } from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import path from 'path';
 
 import _ from 'lodash/fp';
 import Agenda from 'agenda';
 import rp from 'request-promise-native';
 
-import { isProduction } from '../env';
+import {isProduction} from '../env';
 import * as jobs from './jobs';
 import connector from '../mongo/connector';
 import Logger from '../Logger';
@@ -28,13 +28,13 @@ type AgendaJob = {
 };
 
 const jobDefinitions: Array<JobDefinition> = _.values(jobs);
-const jobLoggers = jobDefinitions.reduce((
-  loggers: Object,
-  jobDef: JobDefinition,
-) => ({
-  ...loggers,
-  [jobDef.name]: new Logger(`job-${jobDef.name}`),
-}), {});
+const jobLoggers = jobDefinitions.reduce(
+  (loggers: Object, jobDef: JobDefinition) => ({
+    ...loggers,
+    [jobDef.name]: new Logger(`job-${jobDef.name}`),
+  }),
+  {},
+);
 
 (async () => {
   const db = await connector.getDb();
@@ -52,7 +52,7 @@ const jobLoggers = jobDefinitions.reduce((
   jobDefinitions.forEach((jobDef: JobDefinition) => {
     agenda.define(jobDef.name, async (job: AgendaJob, done: () => void) => {
       try {
-        await jobDef({ logger: jobLoggers[jobDef.name] });
+        await jobDef({logger: jobLoggers[jobDef.name]});
         done();
       } catch (err) {
         done(err);
@@ -60,11 +60,9 @@ const jobLoggers = jobDefinitions.reduce((
     });
 
     if (isProduction) {
-      agenda.every(
-        jobDef.interval,
-        jobDef.name,
-        null, { timezone: 'Asia/Almaty' },
-      );
+      agenda.every(jobDef.interval, jobDef.name, null, {
+        timezone: 'Asia/Almaty',
+      });
     }
   });
 
@@ -75,16 +73,16 @@ const jobLoggers = jobDefinitions.reduce((
     ? JSON.parse(readFileSync(healthchecksPath, 'utf8'))
     : {};
 
-  agenda.on('start', ({ attrs: { name: jobName } }: AgendaJob) => {
+  agenda.on('start', ({attrs: {name: jobName}}: AgendaJob) => {
     jobLoggers[jobName].info('Job started');
   });
-  agenda.on('success', ({ attrs: { name: jobName } }: AgendaJob) => {
+  agenda.on('success', ({attrs: {name: jobName}}: AgendaJob) => {
     jobLoggers[jobName].info('Job finished successfully');
     if (healthchecks[jobName]) {
       rp(healthchecks[jobName]);
     }
   });
-  agenda.on('fail', (err: Error, { attrs: { name: jobName } }: AgendaJob) => {
+  agenda.on('fail', (err: Error, {attrs: {name: jobName}}: AgendaJob) => {
     jobLoggers[jobName].error('Job failed:', err.message);
     jobLoggers[jobName].verbose(err.stack);
   });

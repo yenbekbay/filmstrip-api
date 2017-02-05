@@ -10,7 +10,9 @@ const releaseListFromRes = ($: () => Object) => {
   return _.compact(
     movieNodes.map((el: Object) => {
       const torrentinoSlug = _.replace(
-        '/movie/', '', $(el).children('a').first().attr('href'),
+        '/movie/',
+        '',
+        $(el).children('a').first().attr('href'),
       );
       const title = $(el).find('a > .title > .name').text();
       const year = parseInt($(el).find('a > .title > .year').text(), 10);
@@ -18,7 +20,7 @@ const releaseListFromRes = ($: () => Object) => {
 
       if (!torrentinoSlug || !title || !year || !kpId) return null;
 
-      return { torrentinoSlug, kpId, title, year };
+      return {torrentinoSlug, kpId, title, year};
     }),
   );
 };

@@ -1,17 +1,18 @@
 /* @flow */
 
-import { Tmdb, Imdb, Kinopoisk, Trakt } from 'movie-api';
+import {Tmdb, Imdb, Kinopoisk, Trakt} from 'movie-api';
 import _ from 'lodash/fp';
 
-import { tmdbApiKey, imdbUserId, traktApiKey } from '../env';
-import type { MovieCredits, MovieInfo } from '../types';
+import {tmdbApiKey, imdbUserId, traktApiKey} from '../env';
+import type {MovieCredits, MovieInfo} from '../types';
 
-const trailersFromTmdbVideos = (videos: Array<Object>) => _.flow(
-  _.filter(({ type, site }: Object) => (
-    type === 'Trailer' && site === 'YouTube'
-  )),
-  _.map('key'),
-)(videos);
+const trailersFromTmdbVideos = (videos: Array<Object>) =>
+  _.flow(
+    _.filter(
+      ({type, site}: Object) => type === 'Trailer' && site === 'YouTube',
+    ),
+    _.map('key'),
+  )(videos);
 
 type Query = {
   title: string,
@@ -40,8 +41,8 @@ class MovieApi {
 
     return this._tmdb.getMovieId(
       query.imdbId
-        ? { imdbId: query.imdbId }
-        : { title: query.title, year: query.year },
+        ? {imdbId: query.imdbId}
+        : {title: query.title, year: query.year},
     );
   };
 
@@ -58,32 +59,28 @@ class MovieApi {
     if (query.traktSlug) return query.traktSlug;
 
     return !query.tmdbId ? null : this._trakt.getSlug({
-      tmdbId: query.tmdbId,
-    });
+          tmdbId: query.tmdbId,
+        });
   };
 
-  _getTmdbInfoForLang = async (tmdbId: ?number, lang: string) => (
-    tmdbId ? ((await this._tmdb.getMovieInfo(tmdbId, lang)) || {}) : {}
-  );
+  _getTmdbInfoForLang = async (tmdbId: ?number, lang: string) =>
+    tmdbId ? (await this._tmdb.getMovieInfo(tmdbId, lang)) || {} : {};
 
   _getTmdbInfo = async (tmdbId: ?number) => ({
     en: await this._getTmdbInfoForLang(tmdbId, 'en'),
     ru: await this._getTmdbInfoForLang(tmdbId, 'ru'),
   });
 
-  _getKpInfo = async (kpId: ?number) => (
-    kpId ? ((await this._kp.getFilmInfo(kpId)) || {}) : {}
-  );
+  _getKpInfo = async (kpId: ?number) =>
+    kpId ? (await this._kp.getFilmInfo(kpId)) || {} : {};
 
-  _getKpCredits = async (kpId: ?number) => (
-    kpId ? this._kp.getFilmCredits(kpId) : null
-  );
+  _getKpCredits = async (kpId: ?number) =>
+    kpId ? this._kp.getFilmCredits(kpId) : null;
 
-  _getImdbRating = async (imdbId: ?string) => (
+  _getImdbRating = async (imdbId: ?string) =>
     imdbId
       ? this._imdb.getRating(imdbId)
-      : { imdbRating: NaN, imdbRatingVoteCount: NaN }
-  );
+      : {imdbRating: NaN, imdbRatingVoteCount: NaN};
 
   _getTraktWatchers = async (traktSlug: ?string) => {
     if (!traktSlug) return NaN;
@@ -101,7 +98,7 @@ class MovieApi {
       this._getKpId(query),
     ]);
     const [traktSlug, tmdbInfo, kpInfo, kpCredits] = await Promise.all([
-      this._getTraktSlug({ ...query, tmdbId }),
+      this._getTraktSlug({...query, tmdbId}),
       this._getTmdbInfo(tmdbId),
       this._getKpInfo(kpId),
       this._getKpCredits(kpId),
@@ -135,8 +132,9 @@ class MovieApi {
       },
       imdbId: tmdbInfo.imdbId || query.imdbId,
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
-      imdbRatingVoteCount:
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,
+      imdbRatingVoteCount: (
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN
+      ),
       keywords: tmdbInfo.en.keywords,
       kpId,
       kpRating: kpInfo.kpRating || NaN,
@@ -171,10 +169,11 @@ class MovieApi {
       tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount || NaN,
       traktSlug,
       traktWatchers,
-      year: kpInfo.year || (
-        tmdbInfo.en.releaseDate
-          ? parseInt(tmdbInfo.en.releaseDate.slice(0, 4), 10)
-          : NaN
+      year: (
+        kpInfo.year ||
+          (tmdbInfo.en.releaseDate
+            ? parseInt(tmdbInfo.en.releaseDate.slice(0, 4), 10)
+            : NaN)
       ),
       youtubeIds: {
         en: trailersFromTmdbVideos(tmdbInfo.en.videos),
@@ -184,7 +183,7 @@ class MovieApi {
   };
 
   getUpdates = async (
-    query: Query & { popularityOnly: boolean },
+    query: Query & {popularityOnly: boolean},
   ): Promise<?Object> => {
     if (query.popularityOnly) {
       const [tmdbId, traktSlug] = await Promise.all([
@@ -216,8 +215,9 @@ class MovieApi {
 
     return {
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
-      imdbRatingVoteCount:
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN,
+      imdbRatingVoteCount: (
+        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN
+      ),
       kpRating: kpInfo.kpRating,
       kpRatingVoteCount: kpInfo.kpRatingVoteCount || NaN,
       rtCriticsRating: kpInfo.rtCriticsRating || NaN,
@@ -227,37 +227,36 @@ class MovieApi {
     };
   };
 
-  findMatchOnTmdb = async (query: {
-    title: string,
-    year: number,
-    imdbId?: ?string,
-  }): Promise<?{ tmdbId: number, title: string }> => {
+  findMatchOnTmdb = async (
+    query: {
+      title: string,
+      year: number,
+      imdbId?: ?string,
+    },
+  ): Promise<?{tmdbId: number, title: string}> => {
     if (query.imdbId) {
-      const res = await this._tmdb._connector.apiGet(
-        `find/${query.imdbId}`,
-        { external_source: 'imdb_id' },
-      );
+      const res = await this._tmdb._connector.apiGet(`find/${query.imdbId}`, {
+        external_source: 'imdb_id',
+      });
 
       return _.flow(
         _.getOr([], 'movie_results'),
         _.head,
-        (movie: ?{ id: number, title: string }) => (
-          movie ? ({ tmdbId: movie.id, title: movie.title }) : null
-        ),
+        (movie: ?{id: number, title: string}) =>
+          movie ? {tmdbId: movie.id, title: movie.title} : null,
       )(res);
     }
 
-    const res = await this._tmdb._connector.apiGet(
-      'search/movie',
-      { query: query.title, year: query.year },
-    );
+    const res = await this._tmdb._connector.apiGet('search/movie', {
+      query: query.title,
+      year: query.year,
+    });
 
     return _.flow(
       _.getOr([], 'results'),
       _.head,
-      (movie: ?{ id: number, title: string }) => (
-        movie ? ({ tmdbId: movie.id, title: movie.title }) : null
-      ),
+      (movie: ?{id: number, title: string}) =>
+        movie ? {tmdbId: movie.id, title: movie.title} : null,
     )(res);
   };
 }

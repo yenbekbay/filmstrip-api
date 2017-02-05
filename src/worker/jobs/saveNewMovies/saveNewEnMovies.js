@@ -3,13 +3,13 @@
 import _ from 'lodash/fp';
 import slugify from 'slugify';
 
-import { isProduction } from '../../../env';
-import { Movies } from '../../../mongo';
-import type { JobContext } from './';
-import type { YtsRelease } from '../../../types';
+import {isProduction} from '../../../env';
+import {Movies} from '../../../mongo';
+import type {JobContext} from './';
+import type {YtsRelease} from '../../../types';
 
 const ensureNewMovie = async (
-  { logger, movieApi }: JobContext,
+  {logger, movieApi}: JobContext,
   query: {
     imdbId?: ?string,
     kpId?: ?number,
@@ -20,9 +20,9 @@ const ensureNewMovie = async (
   try {
     const savedMovieByQuery = await Movies.getByQuery({
       $or: _.compact([
-        { 'info.title.en': query.title, 'info.year': query.year },
-        query.imdbId && { 'info.imdbId': query.imdbId },
-        query.kpId && { 'info.kpId': query.kpId },
+        {'info.title.en': query.title, 'info.year': query.year},
+        query.imdbId && {'info.imdbId': query.imdbId},
+        query.kpId && {'info.kpId': query.kpId},
       ]),
     });
     if (savedMovieByQuery) {
@@ -38,8 +38,8 @@ const ensureNewMovie = async (
 
     const savedMovieByTmdbMatch = await Movies.getByQuery({
       $or: _.compact([
-        { 'info.title.en': tmdbMatch.title, 'info.year': query.year },
-        { 'info.tmdbId': tmdbMatch.tmdbId },
+        {'info.title.en': tmdbMatch.title, 'info.year': query.year},
+        {'info.tmdbId': tmdbMatch.tmdbId},
       ]),
     });
     if (savedMovieByTmdbMatch) {
@@ -49,7 +49,7 @@ const ensureNewMovie = async (
 
     logger.debug(`Saving movie "${tmdbMatch.title}"`);
 
-    return { ...query, ...tmdbMatch };
+    return {...query, ...tmdbMatch};
   } catch (err) {
     logger.error(`Failed to check movie "${query.title}":`, err.message);
     logger.verbose(err.stack);
@@ -59,41 +59,44 @@ const ensureNewMovie = async (
 };
 
 const newMoviesFromYts = async (context: JobContext) => {
-  const { logger, yts } = context;
+  const {logger, yts} = context;
 
   const releases = await yts.getLatestReleases();
   logger.debug(`Got ${releases.length} releases from YTS`);
 
-  return _.compact(await Promise.all(
-    releases.reverse().map(async (release: YtsRelease) => {
-      const newMovie = await ensureNewMovie(context, { ...release });
-      if (!newMovie) return null;
+  return _.compact(
+    await Promise.all(
+      releases.reverse().map(async (release: YtsRelease) => {
+        const newMovie = await ensureNewMovie(context, {...release});
+        if (!newMovie) return null;
 
-      return {
-        ...newMovie,
-        ytsId: release.ytsId,
-        youtubeId: release.youtubeId,
-        torrents: release.torrents,
-      };
-    }),
-  ));
+        return {
+          ...newMovie,
+          ytsId: release.ytsId,
+          youtubeId: release.youtubeId,
+          torrents: release.torrents,
+        };
+      }),
+    ),
+  );
 };
 
 const newMoviesFromTpb = async (context: JobContext) => {
-  const { logger, tpb } = context;
+  const {logger, tpb} = context;
 
   const movieQueries = _.uniqBy('title', await tpb.getTopMovies());
   logger.debug(`Got ${movieQueries.length} movies from The Pirate Bay`);
 
-  return _.compact(await Promise.all(
-    movieQueries.map(async (query: { title: string, year: number }) =>
-      ensureNewMovie(context, { ...query }),
+  return _.compact(
+    await Promise.all(
+      movieQueries.map(async (query: {title: string, year: number}) =>
+        ensureNewMovie(context, {...query})),
     ),
-  ));
+  );
 };
 
 const saveNewEnMovies = async (context: JobContext) => {
-  const { logger, tpb, torrentino, movieApi } = context;
+  const {logger, tpb, torrentino, movieApi} = context;
 
   const ytsMovies = await newMoviesFromYts(context);
   const tpbMovies = await newMoviesFromTpb(context);
@@ -109,21 +112,22 @@ const saveNewEnMovies = async (context: JobContext) => {
     /* eslint-disable no-await-in-loop */
     try {
       const [info, tpbTorrents] = await Promise.all([
-        movieApi.getMovieInfo({ ...movie }),
-        tpb.getTorrentsForMovie({ ...movie }),
+        movieApi.getMovieInfo({...movie}),
+        tpb.getTorrentsForMovie({...movie}),
       ]);
 
       if (info) {
-        const torrentinoSlug = (info.kpId && info.title.ru)
-          ? (await torrentino.getTorrentinoSlug(
-              { title: info.title.ru, kpId: info.kpId },
-            ))
+        const torrentinoSlug = info.kpId && info.title.ru
+          ? await torrentino.getTorrentinoSlug({
+              title: info.title.ru,
+              kpId: info.kpId,
+            })
           : null;
         const torrentinoRelease = torrentinoSlug
-          ? (await torrentino.getReleaseDetails(torrentinoSlug))
+          ? await torrentino.getReleaseDetails(torrentinoSlug)
           : null;
 
-        const title: string = ((info.title.en || info.title.ru): any);
+        const title: string = (info.title.en || info.title.ru: any);
         const year = info.year || movie.year;
 
         await Movies.insertOne({
@@ -139,9 +143,10 @@ const saveNewEnMovies = async (context: JobContext) => {
             year,
             youtubeIds: {
               ...info.youtubeIds,
-              en: _.flow(_.compact, _.uniq)(
-                [...(info.youtubeIds.en || []), movie.youtubeId],
-              ),
+              en: _.flow(_.compact, _.uniq)([
+                ...(info.youtubeIds.en || []),
+                movie.youtubeId,
+              ]),
             },
             ytsId: movie.ytsId,
           },

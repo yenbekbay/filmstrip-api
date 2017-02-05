@@ -1,6 +1,6 @@
 /* @flow */
 
-import { modelFromObject } from '../../../test-utils';
+import {modelFromObject} from '../../../test-utils';
 import Torrentino from '../';
 
 const sampleTorrentinoSlug = '854942-jason-bourne';
@@ -18,7 +18,7 @@ describe('Torrentino', () => {
 
   it('fetches a list of latest releases', async () => {
     const torrentinoReleases = await torrentino.getLatestReleases();
-    expect(modelFromObject({ torrentinoReleases })).toMatchSnapshot();
+    expect(modelFromObject({torrentinoReleases})).toMatchSnapshot();
   });
 
   it('fetches release details for a given torrentino slug', async () => {
@@ -27,8 +27,9 @@ describe('Torrentino', () => {
   });
 
   it('finds a releases by a given query', async () => {
-    const torrentinoSlug =
-      await torrentino.getTorrentinoSlug(sampleSearchQuery);
+    const torrentinoSlug = await torrentino.getTorrentinoSlug(
+      sampleSearchQuery,
+    );
     expect(torrentinoSlug).toMatchSnapshot();
   });
 });

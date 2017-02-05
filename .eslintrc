@@ -1,7 +1,0 @@
-{
-  "extends": [
-    "anvilabs",
-    "anvilabs/jest",
-    "anvilabs/lodash"
-  ]
-}

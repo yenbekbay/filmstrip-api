@@ -6,11 +6,11 @@ import {
   subMonths as subMonthsFromDate,
 } from 'date-fns';
 
-import { Movies } from '../../mongo';
+import {Movies} from '../../mongo';
 import MovieApi from '../MovieApi';
-import type { AgendaContext } from '../';
+import type {AgendaContext} from '../';
 
-const updateMovieInfo = async ({ logger }: AgendaContext) => {
+const updateMovieInfo = async ({logger}: AgendaContext) => {
   const movieApi = new MovieApi();
 
   const date = new Date();
@@ -21,26 +21,20 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
     'YYYY-MM-DD',
   );
   const withTorrentsQuery = {
-    $or: [
-      { 'torrents.en': { $ne: [] } },
-      { 'torrents.ru': { $ne: [] } },
-    ],
+    $or: [{'torrents.en': {$ne: []}}, {'torrents.ru': {$ne: []}}],
   };
 
   const newMovies = await Movies.getNewMoviesToUpdate({
     ...withTorrentsQuery,
-    $or: [
-      { infoUpdatedAt: { $lt: oneDayAgo } },
-      { infoUpdatedAt: { $exists: false } },
-    ],
+    $or: [{infoUpdatedAt: {$lt: oneDayAgo}}, {infoUpdatedAt: {$exists: false}}],
   });
   logger.debug(`Updating info for ${newMovies.length} new movies`);
 
   const oldMovies = await Movies.getOldMoviesToUpdate({
     ...withTorrentsQuery,
     $or: [
-      { infoUpdatedAt: { $lt: sixDaysAgo } },
-      { infoUpdatedAt: { $exists: false } },
+      {infoUpdatedAt: {$lt: sixDaysAgo}},
+      {infoUpdatedAt: {$exists: false}},
     ],
   });
   logger.debug(`Updating info for ${oldMovies.length} old movies`);
@@ -50,7 +44,7 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
     /* eslint-disable no-await-in-loop */
-    const title: string = ((movie.info.title.en || movie.info.title.ru): any);
+    const title: string = (movie.info.title.en || movie.info.title.ru: any);
     const popularityOnly = !movie.info.releaseDate ||
       movie.info.releaseDate < twoMonthsAgo;
 
@@ -81,13 +75,10 @@ const updateMovieInfo = async ({ logger }: AgendaContext) => {
         logger.warn(`Failed to get updates for movie "${title}"`);
       }
 
-      // Let's be good guys
+      // let's be good guys
       await new Promise((resolve: () => void) => setTimeout(resolve, 4000));
     } catch (err) {
-      logger.error(
-        `Failed to update info for movie "${title}":`,
-        err.message,
-      );
+      logger.error(`Failed to update info for movie "${title}":`, err.message);
       logger.verbose(err.stack);
     }
     /* eslint-enable no-await-in-loop */

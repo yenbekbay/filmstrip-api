@@ -1,6 +1,6 @@
 /* @flow */
 
-import { Movies } from '../mongo';
+import {Movies} from '../mongo';
 import MovieApi from '../worker/MovieApi';
 
 const addStills = async () => {
@@ -8,7 +8,7 @@ const addStills = async () => {
   const movieApi = new MovieApi();
 
   const movies = await Movies.getAllByQuery({
-    'info.stills': { $exists: false },
+    'info.stills': {$exists: false},
   });
   let updatedCount = 0;
 
@@ -17,12 +17,12 @@ const addStills = async () => {
   // eslint-disable-next-line no-restricted-syntax
   for (const movie of movies) {
     /* eslint-disable no-await-in-loop */
-    const title: string = ((movie.info.title.en || movie.info.title.ru): any);
+    const title: string = (movie.info.title.en || movie.info.title.ru: any);
 
     try {
       const kpInfo = await movieApi._getKpInfo(movie.info.kpId);
 
-      await Movies.updateOne(movie._id, { 'info.stills': kpInfo.stills || [] });
+      await Movies.updateOne(movie._id, {'info.stills': kpInfo.stills || []});
 
       console.info(`Updated movie "${title}"`);
       updatedCount += 1;
@@ -30,10 +30,7 @@ const addStills = async () => {
       // let's be good guys
       await new Promise((resolve: () => void) => setTimeout(resolve, 3000));
     } catch (err) {
-      console.error(
-        `Failed to update movie "${title}":`,
-        err.message,
-      );
+      console.error(`Failed to update movie "${title}":`, err.message);
       console.info(err.stack);
     }
     /* eslint-enable no-await-in-loop */

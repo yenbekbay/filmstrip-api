@@ -1,17 +1,18 @@
 /* @flow */
 
-import { makeExecutableSchema } from 'graphql-tools';
+import {makeExecutableSchema} from 'graphql-tools';
 import _ from 'lodash/fp';
 
 import {
   schema as mongoSchema,
   resolvers as mongoResolvers,
 } from '../mongo/schema';
-import { connectionForType, nodesToConnection } from './connection';
-import { Movies } from '../mongo';
-import type { FeedType } from '../types';
+import {connectionForType, nodesToConnection} from './connection';
+import {Movies} from '../mongo';
+import type {FeedType} from '../types';
 
-const rootSchema = [`
+const rootSchema = [
+  `
 type PageInfo {
   hasPreviousPage: Boolean!
   hasNextPage: Boolean!
@@ -48,16 +49,22 @@ type Query {
 schema {
   query: Query
 }
-`];
+`,
+];
 
 const rootResolvers = {
   Query: {
-    movie: async (
-      root: mixed, { slug }: { slug: string },
-    ) => Movies.getBySlug(slug),
+    movie: async (root: mixed, {slug}: {slug: string}) =>
+      Movies.getBySlug(slug),
     feed: async (
       root: mixed,
-      { type, lang, genres, offset = 0, limit = 10 }: {
+      {
+        type,
+        lang,
+        genres,
+        offset = 0,
+        limit = 10,
+      }: {
         type: FeedType,
         lang: string,
         genres: Array<string>,
@@ -66,22 +73,22 @@ const rootResolvers = {
       },
     ) => {
       const protectedLimit = Math.min(20, limit < 1 ? 10 : limit);
-      const { count, nodes } = await Movies.getFeed(
-        type, lang, genres, offset, protectedLimit,
+      const {count, nodes} = await Movies.getFeed(
+        type,
+        lang,
+        genres,
+        offset,
+        protectedLimit,
       );
 
-      return nodesToConnection({ count, nodes, offset, limit: protectedLimit });
+      return nodesToConnection({count, nodes, offset, limit: protectedLimit});
     },
-    search: async (
-      root: mixed, { query, lang }: { query: string, lang: string },
-    ) => Movies.search(query, lang),
-    genres: (root: mixed, { lang }: { lang: string }) =>
-      Movies.genres(lang),
+    search: async (root: mixed, {query, lang}: {query: string, lang: string}) =>
+      Movies.search(query, lang),
+    genres: (root: mixed, {lang}: {lang: string}) => Movies.genres(lang),
   },
 };
 
-// Put schema together into one array of schema strings
-// and one map of resolvers, like makeExecutableSchema expects
 const schema = [...rootSchema, ...mongoSchema];
 const resolvers = _.merge(rootResolvers, mongoResolvers);
 

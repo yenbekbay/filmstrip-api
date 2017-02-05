@@ -1,8 +1,8 @@
 /* @flow */
 
-import { MongoClient } from 'mongodb';
+import {MongoClient} from 'mongodb';
 
-import { mongoUrl } from '../env';
+import {mongoUrl} from '../env';
 
 class MongoConnector {
   _db: ?Object;

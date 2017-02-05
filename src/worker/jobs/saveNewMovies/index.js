@@ -6,14 +6,16 @@ import saveNewRuMovies from './saveNewRuMovies';
 import Torrentino from '../../Torrentino';
 import Tpb from '../../Tpb';
 import Yts from '../../Yts';
-import type { AgendaContext } from '../../';
+import type {AgendaContext} from '../../';
 
-export type JobContext = AgendaContext & {
-  yts: Yts,
-  tpb: Tpb,
-  torrentino: Torrentino,
-  movieApi: MovieApi,
-};
+export type JobContext =
+  & AgendaContext
+  & {
+    yts: Yts,
+    tpb: Tpb,
+    torrentino: Torrentino,
+    movieApi: MovieApi,
+  };
 
 const saveNewMovies = async (context: AgendaContext) => {
   const yts = new Yts();
@@ -21,7 +23,7 @@ const saveNewMovies = async (context: AgendaContext) => {
   const torrentino = new Torrentino();
   const movieApi = new MovieApi();
 
-  const jobContext = { ...context, yts, tpb, torrentino, movieApi };
+  const jobContext = {...context, yts, tpb, torrentino, movieApi};
 
   await saveNewEnMovies(jobContext);
   await saveNewRuMovies(jobContext);

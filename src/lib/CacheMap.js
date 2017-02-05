@@ -2,6 +2,8 @@
 
 /* based on https://github.com/SomeHats/cache-map */
 
+const EVICT_INTERVAL_QUOTIENT = 0.2;
+
 class Entry<T> {
   value: T;
   setAt: number;
@@ -19,7 +21,10 @@ class CacheMap<K, V> {
   constructor(ttl: number, evictInterval?: number) {
     this.map = new Map();
     this.ttl = ttl;
-    setInterval(() => this.evictExpired(), evictInterval || ttl / 5);
+    setInterval(
+      () => this.evictExpired(),
+      evictInterval || ttl * EVICT_INTERVAL_QUOTIENT,
+    );
   }
 
   clear() {
@@ -44,12 +49,12 @@ class CacheMap<K, V> {
     const evictBefore = Date.now() - this.ttl;
 
     // eslint-disable-next-line no-restricted-syntax
-    for (const [key, { setAt }] of this.map.entries()) {
+    for (const [key, {setAt}] of this.map.entries()) {
       if (setAt < evictBefore) {
         this.map.delete(key);
       } else {
-        // Map#entries iterates in insertion order,
-        // so as soon as we encounter something inserted
+        // since Map#entries iterates in insertion order,
+        // as soon as we encounter something inserted
         // later than we care about, we can stop iterating
         break;
       }

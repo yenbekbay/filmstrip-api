@@ -4,14 +4,15 @@ import _ from 'lodash/fp';
 
 import languagesEn from '../../data/languages/en.json';
 import languagesRu from '../../data/languages/ru.json';
-import type { MovieCredits, MovieInfo, Torrent, MovieDoc } from '../types';
+import type {MovieCredits, MovieInfo, Torrent, MovieDoc} from '../types';
 
 const languages = {
   en: languagesEn,
   ru: languagesRu,
 };
 
-const schema = [`
+const schema = [
+  `
 type MovieCastMember {
   character: String
   name: String!
@@ -91,7 +92,8 @@ type Movie {
   info: MovieInfo!
   torrents(lang: Language!): [Torrent!]!
 }
-`];
+`,
+];
 
 const getMultiLangInfoFieldOr = (
   defaultVal: mixed,
@@ -112,52 +114,54 @@ const resolvers = {
     cast: (credits: MovieCredits) => credits.cast.slice(0, 30),
   },
   MovieInfo: {
-    credits: (info: MovieInfo, { lang }: { lang: string }) =>
+    credits: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr(
-        { cast: [], crew: { directors: [] } },
-        'credits', lang, info,
+        {cast: [], crew: {directors: []}},
+        'credits',
+        lang,
+        info,
       ),
-    genres: (info: MovieInfo, { lang }: { lang: string }) =>
+    genres: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr([], 'genres', lang, info),
-    originalLanguage: (info: MovieInfo, { lang }: { lang: string }) => (
+    originalLanguage: (info: MovieInfo, {lang}: {lang: string}) =>
       info.originalLanguage
         ? languages[lang.toLowerCase()][info.originalLanguage]
-        : null
-    ),
-    posterUrl: (info: MovieInfo, { lang }: { lang: string }) =>
+        : null,
+    posterUrl: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr(null, 'posterUrl', lang, info),
-    productionCountries: (info: MovieInfo, { lang }: { lang: string }) =>
+    productionCountries: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr([], 'productionCountries', lang, info),
-    synopsis: (info: MovieInfo, { lang }: { lang: string }) =>
+    synopsis: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr(null, 'synopsis', lang, info),
     stills: (info: MovieInfo) => (info.stills || []).slice(0, 20),
-    title: (info: MovieInfo, { lang }: { lang: string }) =>
+    title: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr(null, 'title', lang, info),
-    youtubeIds: (info: MovieInfo, { lang }: { lang: string }) =>
+    youtubeIds: (info: MovieInfo, {lang}: {lang: string}) =>
       getMultiLangInfoFieldOr([], 'youtubeIds', lang, info),
   },
   Torrent: {
-    audioTracks: ({ audioTracks }: Torrent, { lang }: { lang: string }) => (
+    audioTracks: ({audioTracks}: Torrent, {lang}: {lang: string}) =>
       audioTracks
-        ? _.compact(audioTracks.map((audioTrack: string) =>
-            languages[lang.toLowerCase()][audioTrack],
-          ))
-        : null
-    ),
-    bundledSubtitles: (
-      { bundledSubtitles }: Torrent, { lang }: { lang: string },
-    ) => (
+        ? _.compact(
+            audioTracks.map(
+              (audioTrack: string) => languages[lang.toLowerCase()][audioTrack],
+            ),
+          )
+        : null,
+    bundledSubtitles: ({bundledSubtitles}: Torrent, {lang}: {lang: string}) =>
       bundledSubtitles
-        ? _.compact(bundledSubtitles.map((bundledSubtitle: string) =>
-            languages[lang.toLowerCase()][bundledSubtitle],
-          ))
-        : null
-    ),
-    source: ({ source }: Torrent) => source.replace(/ /g, '_').toUpperCase(),
+        ? _.compact(
+            bundledSubtitles.map(
+              (bundledSubtitle: string) =>
+                languages[lang.toLowerCase()][bundledSubtitle],
+            ),
+          )
+        : null,
+    source: ({source}: Torrent) => source.replace(/ /g, '_').toUpperCase(),
   },
   Movie: {
     id: (movie: MovieDoc) => movie._id,
-    torrents: (movie: MovieDoc, { lang }: { lang: string }) =>
+    torrents: (movie: MovieDoc, {lang}: {lang: string}) =>
       _.flow(
         _.getOr([], `torrents.${lang.toLowerCase()}`),
         _.orderBy(['seeds'], ['desc']),
@@ -165,4 +169,4 @@ const resolvers = {
   },
 };
 
-export { schema, resolvers };
+export {schema, resolvers};

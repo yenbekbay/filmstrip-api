@@ -18,7 +18,10 @@ module.exports = {
   tmdbApiKey: requiredEnvVariable('TMDB_API_KEY'),
   imdbUserId: requiredEnvVariable('IMDB_USER_ID'),
   traktApiKey: requiredEnvVariable('TRAKT_API_KEY'),
-  mongoUrl: (isProduction && optionalEnvVariable('MONGO_URL')) || 'mongodb://localhost:27017/filmstrip', // eslint-disable-line max-len
+  mongoUrl: (
+    isProduction && optionalEnvVariable('MONGO_URL') ||
+      'mongodb://localhost:27017/filmstrip'
+  ),
   papertrailHost: optionalEnvVariable('PAPERTRAIL_HOST'),
   papertrailPort: optionalEnvVariable('PAPERTRAIL_PORT'),
 };

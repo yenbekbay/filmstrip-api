@@ -10,7 +10,7 @@ const YTS_API_ROOT = 'https://yts.ag/api/v2';
 
 class YtsConnector {
   _rp = rp.defaults({
-    headers: { 'User-Agent': 'filmstrip' },
+    headers: {'User-Agent': 'filmstrip'},
     gzip: true,
     json: true,
   });
@@ -20,20 +20,20 @@ class YtsConnector {
     promiseImplementation: Promise,
   });
 
-  apiLoader: { load: (url: string) => Promise<any> } = new DataLoader(
-    (urls: Array<string>) => this._apiThrottleQueue.addAll(
-      urls.map((url: string) => () => this._rp({ uri: url })),
-    ), {
+  apiLoader: {load(url: string): Promise<any>} = new DataLoader(
+    (urls: Array<string>) =>
+      this._apiThrottleQueue.addAll(
+        urls.map((url: string) => () => this._rp({uri: url})),
+      ),
+    {
       batch: false,
     },
   );
 
-  apiGet = (
-    endpoint: string,
-    query: { [key: string]: mixed },
-  ) => this.apiLoader.load(
-    `${YTS_API_ROOT}/${endpoint}?${querystring.stringify(query)}`,
-  );
+  apiGet = (endpoint: string, query: {[key: string]: mixed}) =>
+    this.apiLoader.load(
+      `${YTS_API_ROOT}/${endpoint}?${querystring.stringify(query)}`,
+    );
 }
 
 export default YtsConnector;

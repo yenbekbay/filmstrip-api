@@ -8,7 +8,12 @@ type ${type}Connection {
 `;
 
 const nodesToConnection = (
-  { nodes, count, offset, limit }: {
+  {
+    nodes,
+    count,
+    offset,
+    limit,
+  }: {
     nodes: Array<any>,
     count: number,
     offset: number,
@@ -21,9 +26,9 @@ const nodesToConnection = (
     nodes,
     pageInfo: {
       hasPreviousPage: offset >= limit,
-      hasNextPage: (offset + pageCount) < count,
+      hasNextPage: offset + pageCount < count,
     },
   };
 };
 
-export { connectionForType, nodesToConnection };
+export {connectionForType, nodesToConnection};
