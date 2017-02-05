@@ -95,15 +95,15 @@ type Movie {
 `,
 ];
 
-const getMultiLangInfoFieldOr = (
-  defaultVal: mixed,
+const getMultiLangInfoField = ({defaultValue = null, key, lang, info}: {
+  defaultValue?: mixed,
   key: string,
   lang: string,
   info: MovieInfo,
-) => {
+}) => {
   const fallbackVal = lang === 'EN'
-    ? defaultVal
-    : getMultiLangInfoFieldOr(defaultVal, key, 'EN', info);
+    ? defaultValue
+    : getMultiLangInfoField({defaultValue, key, lang: 'EN', info});
   const val = _.get(`${key}.${lang.toLowerCase()}`, info);
 
   return val && !_.isEqual(val, []) ? val : fallbackVal;
@@ -115,29 +115,56 @@ const resolvers = {
   },
   MovieInfo: {
     credits: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr(
-        {cast: [], crew: {directors: []}},
-        'credits',
+      getMultiLangInfoField({
+        defaultValue: {cast: [], crew: {directors: []}},
+        key: 'credits',
         lang,
         info,
-      ),
+      }),
     genres: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr([], 'genres', lang, info),
+      getMultiLangInfoField({
+        defaultValue: [],
+        key: 'genres',
+        lang,
+        info,
+      }),
     originalLanguage: (info: MovieInfo, {lang}: {lang: string}) =>
       info.originalLanguage
         ? languages[lang.toLowerCase()][info.originalLanguage]
         : null,
     posterUrl: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr(null, 'posterUrl', lang, info),
+      getMultiLangInfoField({
+        key: 'posterUrl',
+        lang,
+        info,
+      }),
     productionCountries: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr([], 'productionCountries', lang, info),
+      getMultiLangInfoField({
+        defaultValue: [],
+        key: 'productionCountries',
+        lang,
+        info,
+      }),
     synopsis: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr(null, 'synopsis', lang, info),
+      getMultiLangInfoField({
+        key: 'synopsis',
+        lang,
+        info,
+      }),
     stills: (info: MovieInfo) => (info.stills || []).slice(0, 20),
     title: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr(null, 'title', lang, info),
+      getMultiLangInfoField({
+        key: 'title',
+        lang,
+        info,
+      }),
     youtubeIds: (info: MovieInfo, {lang}: {lang: string}) =>
-      getMultiLangInfoFieldOr([], 'youtubeIds', lang, info),
+      getMultiLangInfoField({
+        defaultValue: [],
+        key: 'youtubeIds',
+        lang,
+        info,
+      }),
   },
   Torrent: {
     audioTracks: ({audioTracks}: Torrent, {lang}: {lang: string}) =>

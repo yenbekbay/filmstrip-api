@@ -158,11 +158,13 @@ const Movies = {
     return _.flow(_.shuffle, _.slice(0, 40))(docs);
   },
   getFeed: async (
-    type: FeedType,
-    lang: string,
-    genres: Array<string>,
-    offset: number,
-    limit: number,
+    {type, lang, genres, offset, limit}: {
+      type: FeedType,
+      lang: string,
+      genres: Array<string>,
+      offset: number,
+      limit: number,
+    },
   ): Promise<Feed> =>
     MovieFeedLoader.load(
       JSON.stringify({

@@ -73,13 +73,13 @@ const rootResolvers = {
       },
     ) => {
       const protectedLimit = Math.min(20, limit < 1 ? 10 : limit);
-      const {count, nodes} = await Movies.getFeed(
+      const {count, nodes} = await Movies.getFeed({
         type,
         lang,
         genres,
         offset,
-        protectedLimit,
-      );
+        limit: protectedLimit,
+      });
 
       return nodesToConnection({count, nodes, offset, limit: protectedLimit});
     },
