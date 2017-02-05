@@ -1,6 +1,7 @@
 /* @flow */
 
 import _ from 'lodash/fp';
+import pEachSeries from 'p-each-series';
 import slugify from 'slugify';
 
 import {isProduction} from '../../../env';
@@ -107,9 +108,7 @@ const saveNewEnMovies = async (context: JobContext) => {
   const movies = isProduction ? allMovies : allMovies.slice(0, 2);
   let savedCount = 0;
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const movie of movies) {
-    /* eslint-disable no-await-in-loop */
+  await pEachSeries(movies, async (movie: Object) => {
     try {
       const [info, tpbTorrents] = await Promise.all([
         movieApi.getMovieInfo({...movie}),
@@ -165,8 +164,7 @@ const saveNewEnMovies = async (context: JobContext) => {
       logger.error(`Failed to save movie "${movie.title}":`, err.message);
       logger.verbose(err.stack);
     }
-    /* eslint-enable no-await-in-loop */
-  }
+  });
 
   logger.info(`Saved ${savedCount} new movies in English`);
 };

@@ -1,12 +1,14 @@
 /* @flow */
 
 import {subDays as subDaysFromDate} from 'date-fns';
+import pEachSeries from 'p-each-series';
 
 import {Movies} from '../../mongo';
 import Torrentino from '../Torrentino';
 import Tpb from '../Tpb';
 import Yts from '../Yts';
 import type {AgendaContext} from '../';
+import type {MovieDoc} from '../../types';
 
 const updateTorrents = async ({logger}: AgendaContext) => {
   const yts = new Yts();
@@ -35,10 +37,8 @@ const updateTorrents = async ({logger}: AgendaContext) => {
 
   const movies = [...newMovies, ...oldMovies];
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const movie of movies) {
-    /* eslint-disable no-await-in-loop */
-    const {
+  await pEachSeries(movies, async (movie: MovieDoc) => {
+     const {
       title: {en: enTitle, ru: ruTitle},
       torrentinoSlug,
       year,
@@ -85,8 +85,7 @@ const updateTorrents = async ({logger}: AgendaContext) => {
       );
       logger.verbose(err.stack);
     }
-    /* eslint-enable no-await-in-loop */
-  }
+  });
 };
 
 updateTorrents.interval = '00 10,22 * * *';

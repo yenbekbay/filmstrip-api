@@ -1,7 +1,10 @@
 /* @flow */
 
+import pEachSeries from 'p-each-series';
+
 import {Movies} from '../mongo';
 import MovieApi from '../worker/MovieApi';
+import type {MovieDoc} from '../types';
 
 const addStills = async () => {
   /* eslint-disable no-console */
@@ -14,9 +17,7 @@ const addStills = async () => {
 
   console.log(`Got ${movies.length} movies to update`);
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const movie of movies) {
-    /* eslint-disable no-await-in-loop */
+  await pEachSeries(movies, async (movie: MovieDoc) => {
     const title: string = (movie.info.title.en || movie.info.title.ru: any);
 
     try {
@@ -33,8 +34,7 @@ const addStills = async () => {
       console.error(`Failed to update movie "${title}":`, err.message);
       console.info(err.stack);
     }
-    /* eslint-enable no-await-in-loop */
-  }
+  });
 
   console.log(`Updated ${updatedCount} movies`);
   /* eslint-enable no-console */

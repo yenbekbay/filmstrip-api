@@ -5,10 +5,12 @@ import {
   subDays as subDaysFromDate,
   subMonths as subMonthsFromDate,
 } from 'date-fns';
+import pEachSeries from 'p-each-series';
 
 import {Movies} from '../../mongo';
 import MovieApi from '../MovieApi';
 import type {AgendaContext} from '../';
+import type {MovieDoc} from '../../types';
 
 const updateMovieInfo = async ({logger}: AgendaContext) => {
   const movieApi = new MovieApi();
@@ -41,9 +43,7 @@ const updateMovieInfo = async ({logger}: AgendaContext) => {
 
   const movies = [...newMovies, ...oldMovies];
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const movie of movies) {
-    /* eslint-disable no-await-in-loop */
+  await pEachSeries(movies, async (movie: MovieDoc) => {
     const title: string = (movie.info.title.en || movie.info.title.ru: any);
     const popularityOnly = !movie.info.releaseDate ||
       movie.info.releaseDate < twoMonthsAgo;
@@ -81,8 +81,7 @@ const updateMovieInfo = async ({logger}: AgendaContext) => {
       logger.error(`Failed to update info for movie "${title}":`, err.message);
       logger.verbose(err.stack);
     }
-    /* eslint-enable no-await-in-loop */
-  }
+  });
 };
 
 updateMovieInfo.interval = '00 18 * * *';
