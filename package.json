@@ -28,9 +28,9 @@
     "test": "npm-run-all --parallel typecheck lint jest",
     "jest": "jest",
     "jest:coverage": "jest --coverage",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint --fix ./src",
-    "typecheck": "flow check ./src",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "typecheck": "flow check .",
     "prettier": "prettier --print-width 80 --tab-width 2 --single-quote --trailing-comma --no-bracket-spacing --write",
     "prettier:all": "npm run prettier -- '{scripts,src}/**/*.js'"
   },
