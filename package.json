@@ -22,6 +22,7 @@
     "clean": "rimraf build && mkdir build",
     "prepush": "npm test",
     "commitmsg": "validate-commit-msg",
+    "precommit": "lint-staged",
     "run-migration": "node -r dotenv/config -r babel-register scripts/run-migration.js",
     "run-job": "node -r dotenv/config -r babel-register scripts/run-job.js",
     "test": "npm-run-all --parallel typecheck lint jest",
@@ -30,7 +31,8 @@
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
     "typecheck": "flow check ./src",
-    "prettier": "prettier --print-width 80 --tab-width 2 --single-quote --trailing-comma --no-bracket-spacing --write 'src/**/*.js'"
+    "prettier": "prettier --print-width 80 --tab-width 2 --single-quote --trailing-comma --no-bracket-spacing --write",
+    "prettier:all": "npm run prettier -- '{scripts,src}/**/*.js'"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -47,6 +49,12 @@
       "<rootDir>/src"
     ],
     "testRegex": "/__tests__/.*-test\\.js$"
+  },
+  "lint-staged": {
+    "{scripts,src}/**/*.js": [
+      "prettier",
+      "git add"
+    ]
   },
   "config": {
     "validate-commit-msg": {
@@ -100,6 +108,7 @@
     "husky": "^0.13.1",
     "inquirer": "^3.0.1",
     "jest": "^18.1.0",
+    "lint-staged": "^3.3.0",
     "nodemon": "^1.11.0",
     "npm-run-all": "^4.0.1",
     "prettier": "^0.15.0",
