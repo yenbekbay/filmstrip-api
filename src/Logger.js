@@ -13,17 +13,23 @@ const winstonLogger = new winston.Logger({
     (level: string, message: string, meta: Object): Object =>
       _.isEmpty(meta.tags) ? _.omit(['tags'], meta) : meta,
   ],
-  transports: _.compact([new winston.transports.Console({
+  transports: _.compact([
+    new winston.transports.Console({
       level: 'debug',
       colorize: true,
-    }), isProduction && papertrailHost && papertrailPort && new Papertrail({
+    }),
+    isProduction &&
+      papertrailHost &&
+      papertrailPort &&
+      new Papertrail({
         level: 'verbose',
         host: papertrailHost,
         port: papertrailPort,
         hostname: 'filmstrip',
         inlineMeta: true,
         logFormat: (level: string, message: string) => `[${level}] ${message}`,
-      })]),
+      }),
+  ]),
 });
 
 class Logger {

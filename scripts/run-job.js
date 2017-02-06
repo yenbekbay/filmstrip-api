@@ -11,14 +11,16 @@ Error.stackTraceLimit = Infinity;
 (async () => {
   /* eslint-disable unicorn/no-process-exit, no-console */
   try {
-    const { jobName } = await inquirer.prompt([{
-      type: 'list',
-      name: 'jobName',
-      message: 'Which job do you want to run?',
-      choices: Object.keys(jobs),
-    }]);
+    const {jobName} = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'jobName',
+        message: 'Which job do you want to run?',
+        choices: Object.keys(jobs),
+      },
+    ]);
 
-    await jobs[jobName]({ logger: new Logger(`job-${jobName}`) });
+    await jobs[jobName]({logger: new Logger(`job-${jobName}`)});
 
     process.exit(0);
   } catch (err) {

@@ -58,7 +58,9 @@ class MovieApi {
   _getTraktSlug = async (query: Query) => {
     if (query.traktSlug) return query.traktSlug;
 
-    return !query.tmdbId ? null : this._trakt.getSlug({
+    return !query.tmdbId
+      ? null
+      : this._trakt.getSlug({
           tmdbId: query.tmdbId,
         });
   };

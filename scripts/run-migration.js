@@ -10,12 +10,14 @@ Error.stackTraceLimit = Infinity;
 (async () => {
   /* eslint-disable unicorn/no-process-exit, no-console */
   try {
-    const { migrationName } = await inquirer.prompt([{
-      type: 'list',
-      name: 'migrationName',
-      message: 'Which migration do you want to run?',
-      choices: Object.keys(migrations),
-    }]);
+    const {migrationName} = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'migrationName',
+        message: 'Which migration do you want to run?',
+        choices: Object.keys(migrations),
+      },
+    ]);
 
     await migrations[migrationName]();
 
