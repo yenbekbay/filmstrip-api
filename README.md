@@ -20,7 +20,7 @@ $ yarn # npm install
 3. **Start a local MongoDB server.** For macOS, you can use [mongoDB.app](http://gcollazo.github.io/mongodbapp/).
 
 4. **Add environment variables:**
-`cp env-example .env` and edit with your values.
+`cp .env.example .env` and edit with your values.
 
 5. **Get some data**
 ```bash
