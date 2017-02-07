@@ -7,5 +7,7 @@
 
   "files.autoSave": "off",
 
+  "flow.useNPMPackagedFlow": true,
+
   "javascript.validate.enable": false
 }
