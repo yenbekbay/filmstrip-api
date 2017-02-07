@@ -29,4 +29,4 @@ const modelFromObject = (obj: ?Object) =>
     obj,
   );
 
-export {modelFromObject}; // eslint-disable-line import/prefer-default-export
+export {modelFromObject};

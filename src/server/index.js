@@ -58,7 +58,6 @@ if (!isProduction) {
   });
 }
 
-// eslint-disable-next-line promise/prefer-await-to-callbacks
 graphQLServer.listen(GRAPHQL_PORT, (err: ?Error) => {
   if (err) {
     throw err;

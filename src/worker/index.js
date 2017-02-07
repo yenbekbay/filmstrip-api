@@ -39,7 +39,6 @@ const jobLoggers = jobDefinitions.reduce(
 (async () => {
   const db = await connector.getDb();
 
-  /* eslint-disable promise/prefer-await-to-callbacks */
   const agenda = new Agenda({
     processEvery: '3 minutes',
     collection: 'jobs',
@@ -93,5 +92,4 @@ const jobLoggers = jobDefinitions.reduce(
 
     agenda.start();
   });
-  /* eslint-enable promise/prefer-await-to-callbacks */
 })();

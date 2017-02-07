@@ -25,5 +25,4 @@ const torrentQualityTest = _.cond([
   [_.stubTrue, _.stubFalse],
 ]);
 
-// eslint-disable-next-line import/prefer-default-export
 export {torrentQualityTest};
