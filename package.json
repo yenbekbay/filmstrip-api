@@ -102,7 +102,7 @@
     "babel-register": "^6.23.0",
     "eslint": "^3.15.0",
     "eslint-config-anvilabs": "^6.0.0",
-    "flow-bin": "^0.38.0",
+    "flow-bin": "^0.39.0",
     "husky": "^0.13.1",
     "inquirer": "^3.0.1",
     "jest": "^18.1.0",
