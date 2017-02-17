@@ -20,7 +20,7 @@ const torrentQualityTest = _.cond([
     ({quality}: Torrent) => _.eq('1080p', quality),
     ({size}: Torrent) =>
       size > gbToBytes(FULLHD_SIZE_RANGE[0]) &&
-        size < gbToBytes(FULLHD_SIZE_RANGE[1]),
+      size < gbToBytes(FULLHD_SIZE_RANGE[1]),
   ],
   [_.stubTrue, _.stubFalse],
 ]);

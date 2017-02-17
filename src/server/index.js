@@ -30,9 +30,9 @@ graphQLServer.use(bodyParser.json());
 graphQLServer.use(
   '/graphql',
   cors({
-    origin: (
-      isProduction ? 'https://filmstrip.cf' : `http://localhost:${CORS_PORT}`
-    ),
+    origin: isProduction
+      ? 'https://filmstrip.cf'
+      : `http://localhost:${CORS_PORT}`,
     methods: ['POST'],
   }),
   graphqlExpress((req: $Request) => {

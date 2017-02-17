@@ -22,11 +22,10 @@ const ensureNewMovie = async (
       $or: _.compact([
         {'info.title.ru': query.title, 'info.year': query.year},
         query.kpId && {'info.kpId': query.kpId},
-        tmdbMatch &&
-          {
-            'info.title.en': tmdbMatch.title,
-            'info.year': query.year,
-          },
+        tmdbMatch && {
+          'info.title.en': tmdbMatch.title,
+          'info.year': query.year,
+        },
         tmdbMatch && {'info.tmdbId': tmdbMatch.tmdbId},
       ]),
     });

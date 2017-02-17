@@ -68,12 +68,10 @@ const releaseFromRes = (
     seeds,
     peers,
     quality,
-    magnetLink: (
-      `magnet:?xt=urn:btih:${hash}&${querystring.stringify({
-        dn: title,
-        tr: ytsTrackers,
-      })}`
-    ),
+    magnetLink: `magnet:?xt=urn:btih:${hash}&${querystring.stringify({
+      dn: title,
+      tr: ytsTrackers,
+    })}`,
   })),
 });
 

@@ -134,9 +134,9 @@ class MovieApi {
       },
       imdbId: tmdbInfo.imdbId || query.imdbId,
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
-      imdbRatingVoteCount: (
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN
-      ),
+      imdbRatingVoteCount: imdbRating.imdbRatingVoteCount ||
+        kpInfo.imdbRatingVoteCount ||
+        NaN,
       keywords: tmdbInfo.en.keywords,
       kpId,
       kpRating: kpInfo.kpRating || NaN,
@@ -171,12 +171,10 @@ class MovieApi {
       tmdbRatingVoteCount: tmdbInfo.en.tmdbRatingVoteCount || NaN,
       traktSlug,
       traktWatchers,
-      year: (
-        kpInfo.year ||
-          (tmdbInfo.en.releaseDate
-            ? parseInt(tmdbInfo.en.releaseDate.slice(0, 4), 10)
-            : NaN)
-      ),
+      year: kpInfo.year ||
+        (tmdbInfo.en.releaseDate
+          ? parseInt(tmdbInfo.en.releaseDate.slice(0, 4), 10)
+          : NaN),
       youtubeIds: {
         en: trailersFromTmdbVideos(tmdbInfo.en.videos),
         ru: trailersFromTmdbVideos(tmdbInfo.ru.videos),
@@ -217,9 +215,9 @@ class MovieApi {
 
     return {
       imdbRating: imdbRating.imdbRating || kpInfo.imdbRating || NaN,
-      imdbRatingVoteCount: (
-        imdbRating.imdbRatingVoteCount || kpInfo.imdbRatingVoteCount || NaN
-      ),
+      imdbRatingVoteCount: imdbRating.imdbRatingVoteCount ||
+        kpInfo.imdbRatingVoteCount ||
+        NaN,
       kpRating: kpInfo.kpRating,
       kpRatingVoteCount: kpInfo.kpRatingVoteCount || NaN,
       rtCriticsRating: kpInfo.rtCriticsRating || NaN,
