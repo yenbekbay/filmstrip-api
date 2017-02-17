@@ -1,11 +1,9 @@
 {
-  "editor.renderWhitespace": "boundary",
+  "editor.insertSpaces": true,
   "editor.rulers": [80],
   "editor.tabSize": 2,
 
   "eslint.autoFixOnSave": true,
-
-  "files.autoSave": "off",
 
   "flow.useNPMPackagedFlow": true,
 
