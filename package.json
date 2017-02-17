@@ -50,7 +50,7 @@
   },
   "lint-staged": {
     "{scripts,src}/**/*.js": [
-      "lint:fix",
+      "eslint --fix",
       "git add"
     ]
   },
