@@ -14,23 +14,23 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "deploy": "sh ./scripts/deploy.sh",
-    "start": "npm run start:server",
-    "start:worker": "node -r dotenv/config -r babel-register src/worker",
-    "start:server": "nodemon src/server/index.js",
-    "build": "npm run clean && babel --out-dir ./build --ignore **/__tests__,**/__mocks__ ./src",
-    "clean": "rimraf build && mkdir build",
-    "prepush": "npm test",
-    "commitmsg": "validate-commit-msg",
-    "precommit": "lint-staged",
-    "run-migration": "node -r dotenv/config -r babel-register scripts/run-migration.js",
-    "run-job": "node -r dotenv/config -r babel-register scripts/run-job.js",
-    "test": "npm-run-all --parallel typecheck lint jest",
-    "jest": "jest",
-    "jest:coverage": "jest --coverage",
+    "typecheck": "flow check .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "typecheck": "flow check ."
+    "jest": "jest",
+    "jest:coverage": "jest --coverage",
+    "test": "npm-run-all --parallel typecheck lint jest",
+    "start:server": "nodemon src/server/index.js",
+    "start:worker": "node -r dotenv/config -r babel-register src/worker",
+    "start": "npm run start:server",
+    "precommit": "lint-staged",
+    "commitmsg": "validate-commit-msg",
+    "prepush": "npm test",
+    "clean": "rimraf build && mkdir build",
+    "build": "npm run clean && babel --out-dir ./build --ignore **/__tests__,**/__mocks__ ./src",
+    "deploy": "sh ./scripts/deploy.sh",
+    "run-migration": "node -r dotenv/config -r babel-register scripts/run-migration.js",
+    "run-job": "node -r dotenv/config -r babel-register scripts/run-job.js"
   },
   "jest": {
     "collectCoverageFrom": [
